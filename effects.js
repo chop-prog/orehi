@@ -547,7 +547,7 @@
 
   /* ---------- Ракета пролетает по тёмным блокам, из сопла сыплются орешки ---------- */
   if (!reduced) {
-    document.querySelectorAll('.hero, .stats-band, #contacts').forEach((zone) => {
+    document.querySelectorAll('.hero, .cosmos-zone, .stats-band, #contacts').forEach((zone) => {
       const canvas = document.createElement('canvas');
       canvas.className = 'flyby';
       canvas.setAttribute('aria-hidden', 'true');
@@ -557,7 +557,7 @@
       let next = performance.now() + rand(1000, 3000);
       const size = () => {
         w = zone.offsetWidth; h = zone.offsetHeight;
-        canvas.width = w * dpr; canvas.height = h * dpr;
+        canvas.width = w; canvas.height = h; // без dpr: блоки каталога высокие, холст и так большой
       };
       size();
       addEventListener('resize', size);
@@ -575,7 +575,6 @@
         requestAnimationFrame(loop);
         if (!visible || document.hidden) return;
         if (!rocket && !trail.length && now > next) launch();
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         ctx.clearRect(0, 0, w, h);
         if (rocket) {
           rocket.x += rocket.vx; rocket.y += rocket.vy;
