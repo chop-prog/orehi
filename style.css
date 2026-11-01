@@ -379,7 +379,7 @@ html.fx .reveal.is-in { opacity: 1; transform: none; }
 
 /* Магнитные кнопки и карточки с наклоном */
 .is-magnet { transition: translate .15s ease-out, background .2s, color .2s; }
-.btn, .cart-btn, .header__tg { transition: translate .4s cubic-bezier(.2, .7, .2, 1), background .2s, color .2s, border-color .2s, transform .2s; }
+.btn, .cart-btn, .header__tg, .theme-switch { transition: translate .4s cubic-bezier(.2, .7, .2, 1), background .2s, color .2s, border-color .2s, transform .2s; }
 .card { position: relative; }
 .card:hover { transition: transform .12s ease-out, box-shadow .35s; }
 .card::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: radial-gradient(circle at var(--mx, 50%) var(--my, 30%), rgba(255, 255, 255, .45), transparent 42%); opacity: 0; transition: opacity .3s; mix-blend-mode: soft-light; }
@@ -508,10 +508,18 @@ html.fx .h-display.by-words.reveal { opacity: 1; transform: none; }
 }
 
 /* ---------- Переключатель «Ночь / День» ---------- */
-.theme-switch { display: flex; gap: 2px; padding: 3px; border-radius: 999px; border: 1.5px solid var(--line-on-space); }
-.theme-switch button { display: flex; align-items: center; gap: 6px; padding: 7px 12px; border: 0; border-radius: 999px; background: none; color: var(--muted-on-space); font-family: var(--display); font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; transition: background .2s, color .2s; }
+.theme-switch { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; padding: 3px; border-radius: 999px; border: 1.5px solid var(--line-on-space); }
+/* Оранжевая «капля» переезжает под выбранную кнопку и пружинит */
+.theme-switch::before { content: ''; position: absolute; top: 3px; bottom: 3px; left: 3px; width: calc(50% - 4px); border-radius: 999px; background: var(--accent); transition: translate .5s cubic-bezier(.5, 1.6, .4, 1); }
+:root[data-theme="day"] .theme-switch::before { translate: calc(100% + 2px) 0; }
+.theme-switch.squish::before { animation: squish .5s ease; }
+@keyframes squish { 35% { scale: 1.35 .8; } 70% { scale: .92 1.08; } }
+.theme-switch button { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 7px 12px; border: 0; border-radius: 999px; background: none; color: var(--muted-on-space); font-family: var(--display); font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; transition: background .2s, color .2s; }
 .theme-switch button:hover { color: var(--cream); }
-.theme-switch button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.theme-switch button[aria-pressed="true"] { color: var(--accent-ink); }
+/* Смена темы: новая тема растекается каплей от кнопки (View Transitions) */
+::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+::view-transition-new(root) { z-index: 2; }
 .theme-switch svg { width: 14px; height: 14px; flex-shrink: 0; }
 @media (max-width: 1100px) { .theme-switch span { display: none; } .theme-switch button { padding: 7px 9px; } }
 
@@ -545,3 +553,12 @@ html.fx .h-display.by-words.reveal { opacity: 1; transform: none; }
 :root[data-theme="day"] :is(.hero, .stats-band, #contacts, .footer) .stars { display: block; }
 :root[data-theme="day"] .toast { background: var(--ink); color: var(--paper); }
 @media (max-width: 520px) { .header__inner { gap: 10px; } .header__tg { flex-shrink: 0; } .theme-switch { flex-shrink: 0; } .theme-switch button { padding: 6px 7px; } }
+
+/* ---------- Капля на кнопках: заливка другим цветом растекается от курсора ---------- */
+.drop-host { position: relative; overflow: hidden; isolation: isolate; --drop-color: var(--accent); --drop-ink: var(--accent-ink); }
+.drop-host:is(.btn--accent, .btn--primary, .chip.active, .mode.active) { --drop-color: var(--cream); --drop-ink: var(--space); }
+.theme-switch.drop-host { --drop-color: rgba(240, 138, 36, .22); --drop-ink: inherit; }
+.drop { position: absolute; z-index: -1; border-radius: 50%; pointer-events: none; translate: -50% -50%; scale: 0; background: var(--drop-color); transition: scale .55s cubic-bezier(.3, .7, .2, 1); }
+.drop.is-full { scale: 1; }
+:root:root .drop-host.is-dropped:not(.theme-switch) { color: var(--drop-ink); border-color: var(--drop-color); background-color: transparent; transition: color .3s, border-color .3s; }
+:root:root .drop-host:is(.btn--accent, .btn--primary, .chip.active, .mode.active).is-dropped { background-color: var(--accent); }

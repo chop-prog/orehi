@@ -26,10 +26,30 @@ document.querySelectorAll('[data-theme-set]').forEach((btn) => {
   sync();
   btn.addEventListener('click', () => {
     const theme = btn.dataset.themeSet;
-    document.documentElement.dataset.theme = theme;
-    try { localStorage.setItem('cosmo-theme', theme); } catch (e) { /* приватный режим — тема просто не запомнится */ }
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'day' ? '#ffffff' : '#020204');
-    document.querySelectorAll('[data-theme-set]').forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+    const root = document.documentElement;
+    if ((root.dataset.theme || 'night') === theme) return;
+    const apply = () => {
+      root.dataset.theme = theme;
+      try { localStorage.setItem('cosmo-theme', theme); } catch (e) { /* приватный режим — тема просто не запомнится */ }
+      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'day' ? '#ffffff' : '#020204');
+      document.querySelectorAll('[data-theme-set]').forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+    };
+    // Переключатель пружинит, как капля
+    const sw = btn.closest('.theme-switch');
+    sw.classList.remove('squish');
+    void sw.offsetWidth;
+    sw.classList.add('squish');
+    // Новая тема растекается по странице каплей от нажатой кнопки; без поддержки браузера — просто сменится
+    if (!document.startViewTransition || matchMedia('(prefers-reduced-motion: reduce)').matches) return apply();
+    const r = btn.getBoundingClientRect();
+    const x = r.left + r.width / 2, y = r.top + r.height / 2;
+    const end = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+    document.startViewTransition(apply).ready.then(() => {
+      root.animate(
+        { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${end * 0.18}px at ${x}px ${y + 14}px)`, `circle(${end}px at ${x}px ${y}px)`] },
+        { duration: 900, easing: 'cubic-bezier(.65, 0, .35, 1)', pseudoElement: '::view-transition-new(root)' },
+      );
+    });
   });
 });
 
