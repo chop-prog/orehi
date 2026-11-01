@@ -160,7 +160,7 @@ h1, h2, h3 { text-wrap: balance; }
 .zone-light .stars { display: none; }
 .zone-light .section--cosmos .chip { border-color: var(--line); background: var(--paper); }
 .zone-light .section--cosmos .card, .zone-light .section--cosmos .delivery__card { box-shadow: var(--shadow); }
-.zone-light .section--cosmos .card, .zone-light .section--cosmos .world { background: var(--paper); backdrop-filter: none; }
+.zone-light .section--cosmos .card, .zone-light .section--cosmos .world, .zone-light .section--cosmos .delivery__card { background: var(--paper); backdrop-filter: none; }
 .zone-light .world__arrow { background: rgba(255, 255, 255, .88); }
 
 /* Разделы-«галактики» */
@@ -275,7 +275,7 @@ h1, h2, h3 { text-wrap: balance; }
 .contacts__list span { color: var(--muted-on-space); }
 .contacts__list a { color: var(--cream); font-weight: 700; }
 .footer { background: var(--space); color: var(--muted-on-space); font-size: 13px; padding-block: 0 28px; overflow: hidden; }
-.footer__word { font-family: var(--display); font-weight: 900; font-size: clamp(56px, 16.5vw, 225px); line-height: .8; letter-spacing: -.05em; white-space: nowrap; color: transparent; -webkit-text-stroke: 1.5px rgba(244, 239, 230, .18); text-align: center; margin-bottom: 28px; user-select: none; }
+.footer__word { font-family: var(--display); font-weight: 900; font-size: clamp(56px, 16.5vw, 225px); line-height: .8; letter-spacing: -.05em; white-space: nowrap; color: rgba(244, 239, 230, .09); text-align: center; margin-bottom: 28px; user-select: none; }
 .footer__inner { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; border-top: 1px solid var(--line-on-space); padding-top: 20px; }
 .footer a { color: var(--cream); }
 
@@ -421,7 +421,8 @@ html.fx .h-display.by-words.reveal { opacity: 1; transform: none; }
 .hero.is-glow::after { opacity: 1; }
 
 /* Слово в подвале загорается под курсором */
-.footer__word.is-lit { background: radial-gradient(circle at var(--fx) var(--fy), var(--accent) 0, rgba(240, 138, 36, .55) 9%, transparent 24%); -webkit-background-clip: text; background-clip: text; -webkit-text-stroke-color: rgba(244, 239, 230, .3); }
+/* Заливка без обводки: у буквы M в шрифте контуры перекрываются, и обводка показывала внутренние линии */
+.footer__word.is-lit { color: transparent; background: radial-gradient(circle at var(--fx) var(--fy), var(--accent) 0, rgba(240, 138, 36, .55) 9%, transparent 24%), linear-gradient(rgba(244, 239, 230, .09), rgba(244, 239, 230, .09)); -webkit-background-clip: text; background-clip: text; }
 
 /* Параллакс: фото разделов чуть крупнее рамки, чтобы при сдвиге не появлялись края */
 .world img { scale: 1.1; }
