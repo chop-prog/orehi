@@ -526,9 +526,6 @@ html.fx .h-display.by-words.reveal { opacity: 1; transform: none; }
 }
 :root[data-theme="day"] .stars { display: none; }
 :root[data-theme="day"] .header { background: rgba(255, 255, 255, .9); }
-:root[data-theme="day"] .hero { background: radial-gradient(ellipse 70% 60% at 50% 45%, #fff3e2 0%, var(--space) 70%); }
-:root[data-theme="day"] .hero__outline { -webkit-text-stroke-color: rgba(29, 27, 38, .85); }
-:root[data-theme="day"] .orbit { border-color: rgba(29, 27, 38, .25); }
 :root[data-theme="day"] .section--cosmos .chip { border-color: var(--line); background: var(--paper); }
 :root[data-theme="day"] .section--cosmos .card, :root[data-theme="day"] .section--cosmos .world,
 :root[data-theme="day"] .section--cosmos .delivery__card { background: var(--paper); backdrop-filter: none; box-shadow: var(--shadow); }
@@ -537,7 +534,14 @@ html.fx .h-display.by-words.reveal { opacity: 1; transform: none; }
 :root[data-theme="day"] .overlay { background: rgba(29, 27, 38, .4); }
 :root[data-theme="day"] .modal { background: rgba(29, 27, 38, .45); }
 :root[data-theme="day"] .doc p, :root[data-theme="day"] .doc li { color: #3d3a48; }
-:root[data-theme="day"] .footer__word { color: rgba(29, 27, 38, .08); }
-:root[data-theme="day"] .footer__word.is-lit { color: transparent; background: radial-gradient(circle at var(--fx) var(--fy), var(--accent) 0, rgba(240, 138, 36, .55) 9%, transparent 24%), linear-gradient(rgba(29, 27, 38, .08), rgba(29, 27, 38, .08)); -webkit-background-clip: text; background-clip: text; }
+/* Днём первый экран, цифры и подвал с COSMO остаются тёмными: возвращаем им ночные токены */
+:root[data-theme="day"] :is(.hero, .stats-band, .footer) {
+  color-scheme: dark;
+  --space: #020204; --space-2: #0a0a10; --paper: #0e0e12;
+  --cream: #f4efe6; --cream-2: #17171c; --ink: #f4efe6;
+  --muted: #a4a6b8; --muted-on-space: #a4a6b8;
+  --line: rgba(244, 239, 230, .16); --line-on-space: rgba(244, 239, 230, .14);
+}
+:root[data-theme="day"] :is(.hero, .stats-band, .footer) .stars { display: block; }
 :root[data-theme="day"] .toast { background: var(--ink); color: var(--paper); }
 @media (max-width: 520px) { .header__inner { gap: 10px; } .header__tg { flex-shrink: 0; } .theme-switch { flex-shrink: 0; } .theme-switch button { padding: 6px 7px; } }
