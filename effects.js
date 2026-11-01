@@ -6,20 +6,20 @@
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   // any-pointer: на ноутбуке с сенсорным экраном основным считается касание, но мышь тоже есть
   const hasMouse = matchMedia('(any-pointer: fine)').matches;
-  const SPRITE = 96; // размер спрайта в CSS-пикселях
+  const SPRITE = 128; // размер спрайта в CSS-пикселях
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const rand = (a, b) => a + Math.random() * (b - a);
+  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
   /* ---------- Рисуем орехи ---------- */
+  // Каждый орех: форма → основной цвет с тенью → внутри формы текстура, блик и затенение по краю
   function sprite(draw) {
     const c = document.createElement('canvas');
     c.width = c.height = SPRITE * dpr;
     const ctx = c.getContext('2d');
     ctx.scale(dpr, dpr);
     ctx.translate(SPRITE / 2, SPRITE / 2);
-    ctx.scale(1.3, 1.3); // орех занимает почти весь спрайт, с запасом под тень
-    ctx.shadowColor = 'rgba(0, 0, 0, .28)';
-    ctx.shadowBlur = 8;
-    ctx.shadowOffsetY = 4;
+    ctx.scale(1.7, 1.7); // форма нарисована в координатах ±32, спрайт заполняется почти целиком
     draw(ctx);
     return c;
   }
@@ -28,117 +28,211 @@
     stops.forEach(([o, c]) => g.addColorStop(o, c));
     return g;
   };
-  const lines = (ctx, color, width, paths) => {
+  function body(ctx, path, fill, details) {
     ctx.save();
-    ctx.shadowColor = 'transparent';
-    ctx.strokeStyle = color;
-    ctx.lineWidth = width;
-    ctx.lineCap = 'round';
-    paths.forEach((p) => { ctx.beginPath(); p(ctx); ctx.stroke(); });
+    ctx.shadowColor = 'rgba(0, 0, 0, .35)';
+    ctx.shadowBlur = 6;
+    ctx.shadowOffsetY = 3;
+    path(ctx);
+    ctx.fillStyle = fill;
+    ctx.fill();
     ctx.restore();
+    ctx.save();
+    path(ctx);
+    ctx.clip();
+    details(ctx);
+    ctx.restore();
+    // Тёмный контур: даже маленький орех читается силуэтом
+    path(ctx);
+    ctx.strokeStyle = 'rgba(45, 22, 6, .55)';
+    ctx.lineWidth = 1.3;
+    ctx.stroke();
+  }
+  // Мелкие пятнышки/поры: n штук в прямоугольнике, цвет и размер случайные в заданных пределах
+  function speckle(ctx, n, w, h, color, rx, ry, angle = 0) {
+    ctx.fillStyle = color;
+    for (let i = 0; i < n; i++) {
+      ctx.beginPath();
+      ctx.ellipse(rand(-w, w), rand(-h, h), rand(...rx), rand(...ry), angle + rand(-0.3, 0.3), 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  const gloss = (ctx, x, y, r, a) => {
+    ctx.fillStyle = radial(ctx, x, y, r, [[0, `rgba(255, 244, 225, ${a})`], [1, 'rgba(255, 244, 225, 0)']]);
+    ctx.fillRect(-40, -40, 80, 80);
+  };
+  const rim = (ctx, x, y, r, a) => {
+    ctx.fillStyle = radial(ctx, x, y, r, [[0.55, 'rgba(30, 12, 2, 0)'], [1, `rgba(30, 12, 2, ${a})`]]);
+    ctx.fillRect(-40, -40, 80, 80);
+  };
+
+  const almondPath = (c) => { c.beginPath(); c.moveTo(0, -32); c.bezierCurveTo(21, -22, 22, 16, 0, 32); c.bezierCurveTo(-22, 16, -21, -22, 0, -32); };
+  const cashewPath = (c) => {
+    c.beginPath();
+    c.moveTo(-20, -20);
+    c.bezierCurveTo(-34, -4, -24, 26, 2, 28);
+    c.bezierCurveTo(24, 29, 32, 10, 26, -4);
+    c.bezierCurveTo(22, -14, 10, -12, 9, -2);
+    c.bezierCurveTo(8, 8, 0, 10, -5, 5);
+    c.bezierCurveTo(-11, -1, -6, -14, -9, -21);
+    c.bezierCurveTo(-11, -27, -17, -25, -20, -20);
+    c.closePath();
+  };
+  const apricotPath = (c) => {
+    c.beginPath();
+    c.moveTo(0, -24);
+    c.bezierCurveTo(22, -26, 32, -6, 26, 10);
+    c.bezierCurveTo(20, 26, -6, 30, -20, 18);
+    c.bezierCurveTo(-32, 6, -26, -22, 0, -24);
+    c.closePath();
   };
 
   const NUTS = {
-    almond: (ctx) => {
-      ctx.beginPath();
-      ctx.moveTo(0, -32);
-      ctx.bezierCurveTo(20, -22, 21, 16, 0, 32);
-      ctx.bezierCurveTo(-21, 16, -20, -22, 0, -32);
-      ctx.fillStyle = radial(ctx, -7, -10, 40, [[0, '#d99456'], [0.55, '#a8622c'], [1, '#6f3b17']]);
-      ctx.fill();
-      lines(ctx, 'rgba(70, 35, 12, .35)', 1.2, [
-        (c) => { c.moveTo(-4, -26); c.quadraticCurveTo(-10, 0, -4, 26); },
-        (c) => { c.moveTo(4, -26); c.quadraticCurveTo(10, 0, 4, 26); },
-        (c) => { c.moveTo(0, -28); c.lineTo(0, 28); },
-      ]);
-    },
+    almond: (ctx) => body(ctx, almondPath,
+      radial(ctx, -6, -10, 42, [[0, '#d0884a'], [0.5, '#a3602d'], [1, '#5d3014']]),
+      (c) => {
+        // Пористая кожица миндаля: вытянутые вдоль ореха ямки и светлые волокна
+        speckle(c, 160, 20, 31, 'rgba(70, 30, 8, .32)', [0.5, 1.3], [1.4, 3.2], Math.PI / 2 * 0);
+        speckle(c, 70, 20, 31, 'rgba(240, 186, 130, .2)', [0.4, 1], [1.5, 3]);
+        c.strokeStyle = 'rgba(70, 32, 10, .22)';
+        c.lineWidth = 0.8;
+        for (let i = -3; i <= 3; i++) {
+          c.beginPath(); c.moveTo(i * 4, -28); c.quadraticCurveTo(i * 7.5, 0, i * 4, 28); c.stroke();
+        }
+        gloss(c, -7, -12, 15, 0.4);
+        rim(c, 0, 0, 30, 0.6);
+      }),
     hazelnut: (ctx) => {
-      ctx.beginPath();
-      ctx.arc(0, 5, 26, 0, Math.PI * 2);
-      ctx.fillStyle = radial(ctx, -9, -4, 36, [[0, '#c98443'], [0.6, '#8f4f20'], [1, '#5a2e10']]);
-      ctx.fill();
-      ctx.shadowColor = 'transparent';
-      ctx.beginPath();
-      ctx.ellipse(0, -15, 19, 10, 0, 0, Math.PI * 2);
-      ctx.fillStyle = radial(ctx, -4, -18, 22, [[0, '#ecd2ac'], [1, '#bf9563']]);
-      ctx.fill();
-      lines(ctx, 'rgba(120, 80, 40, .35)', 1, [
-        (c) => { c.moveTo(-12, -15); c.lineTo(-6, -22); },
-        (c) => { c.moveTo(0, -12); c.lineTo(0, -24); },
-        (c) => { c.moveTo(12, -15); c.lineTo(6, -22); },
-      ]);
-      ctx.beginPath();
-      ctx.arc(0, -26, 2.5, 0, Math.PI * 2);
-      ctx.fillStyle = '#7a4a22';
-      ctx.fill();
+      body(ctx, (c) => { c.beginPath(); c.arc(0, 6, 26, 0, Math.PI * 2); },
+        radial(ctx, -9, -2, 38, [[0, '#c7843f'], [0.55, '#8c4c1e'], [1, '#4a240a']]),
+        (c) => {
+          // Тонкие продольные полоски скорлупы и глянец
+          c.lineWidth = 1;
+          for (let i = 0; i < 26; i++) {
+            const x = rand(-24, 24);
+            c.strokeStyle = Math.random() < 0.6 ? 'rgba(60, 25, 5, .25)' : 'rgba(230, 170, 110, .18)';
+            c.beginPath(); c.moveTo(x * 0.7, -12); c.quadraticCurveTo(x * 1.15, 10, x * 0.6, 32); c.stroke();
+          }
+          gloss(c, -10, -2, 16, 0.5);
+          rim(c, 0, 6, 27, 0.65);
+        });
+      body(ctx, (c) => { c.beginPath(); c.ellipse(0, -14, 21, 11, 0, 0, Math.PI * 2); },
+        radial(ctx, -5, -18, 24, [[0, '#ead1a8'], [0.7, '#c49a64'], [1, '#97703f']]),
+        (c) => {
+          speckle(c, 110, 21, 11, 'rgba(110, 70, 30, .35)', [0.3, 0.9], [0.3, 0.9]);
+          speckle(c, 50, 21, 11, 'rgba(255, 240, 210, .3)', [0.3, 0.8], [0.3, 0.8]);
+        });
+      ctx.fillStyle = '#6e4220';
+      ctx.beginPath(); ctx.arc(0, -24, 2.4, 0, Math.PI * 2); ctx.fill();
     },
     pistachio: (ctx) => {
-      ctx.beginPath();
-      ctx.ellipse(0, 0, 21, 29, 0.15, 0, Math.PI * 2);
-      ctx.fillStyle = radial(ctx, -7, -9, 36, [[0, '#f4e6c8'], [0.65, '#d9bf8f'], [1, '#a98a57']]);
-      ctx.fill();
-      ctx.shadowColor = 'transparent';
-      ctx.beginPath();
-      ctx.ellipse(5, 1, 10, 21, 0.15, 0, Math.PI * 2);
-      ctx.fillStyle = radial(ctx, 3, -4, 22, [[0, '#c3dd73'], [0.7, '#86a83a'], [1, '#5c7a1f']]);
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(120, 50, 70, .55)';
-      ctx.lineWidth = 2;
-      ctx.stroke();
+      // Приоткрытая скорлупка: две створки сходятся внизу и расходятся вверху, в щели — зелёное ядро
+      body(ctx, (c) => { c.beginPath(); c.ellipse(0, -6, 9, 21, 0, 0, Math.PI * 2); },
+        radial(ctx, -2, -12, 22, [[0, '#d6ec86'], [0.6, '#93b53f'], [1, '#5b761d']]), (c) => {
+          speckle(c, 7, 8, 18, 'rgba(130, 55, 90, .45)', [1.5, 3.5], [2, 5]);
+          gloss(c, -3, -14, 8, 0.55);
+        });
+      const half = (side) => (c) => {
+        c.beginPath();
+        c.ellipse(0, 2, 20, 28, 0, side < 0 ? Math.PI / 2 : -Math.PI / 2, side < 0 ? Math.PI * 1.5 : Math.PI / 2);
+        c.lineTo(side * 1.5, 30);
+        c.closePath();
+      };
+      [-1, 1].forEach((side) => {
+        ctx.save();
+        ctx.translate(0, 30);
+        ctx.rotate(side * 0.14); // створка отогнута наружу вокруг нижней точки
+        ctx.translate(side * 1.5, -30);
+        body(ctx, half(side), radial(ctx, side * 8 - 4, -8, 34, [[0, '#f5e8cb'], [0.6, '#d8be8b'], [1, '#9a7b4b']]), (c) => {
+          speckle(c, 70, 20, 28, 'rgba(120, 85, 40, .22)', [0.3, 0.9], [0.3, 1.2]);
+          c.strokeStyle = 'rgba(110, 75, 35, .22)';
+          c.lineWidth = 0.7;
+          for (let i = 1; i <= 3; i++) { c.beginPath(); c.moveTo(side * i * 4.5, -24); c.quadraticCurveTo(side * i * 7, 2, side * i * 4.5, 27); c.stroke(); }
+          gloss(c, side * 9 - 3, -10, 10, 0.4);
+          rim(c, 0, 2, 28, 0.45);
+        });
+        ctx.restore();
+      });
     },
-    cashew: (ctx) => {
-      // Почка: толстая дуга с закруглёнными концами
-      ctx.beginPath();
-      ctx.moveTo(-20, -20);
-      ctx.bezierCurveTo(-34, -4, -24, 26, 2, 28);
-      ctx.bezierCurveTo(24, 29, 32, 10, 26, -4);
-      ctx.bezierCurveTo(22, -14, 10, -12, 9, -2);
-      ctx.bezierCurveTo(8, 8, 0, 10, -5, 5);
-      ctx.bezierCurveTo(-11, -1, -6, -14, -9, -21);
-      ctx.bezierCurveTo(-11, -27, -17, -25, -20, -20);
-      ctx.closePath();
-      ctx.fillStyle = radial(ctx, -8, 8, 38, [[0, '#fbefd6'], [0.55, '#e8cd98'], [1, '#c29d5e']]);
-      ctx.fill();
-      lines(ctx, 'rgba(160, 120, 60, .3)', 1.2, [
-        (c) => { c.moveTo(-15, -12); c.bezierCurveTo(-22, 4, -12, 20, 4, 21); },
-      ]);
-    },
-    apricot: (ctx) => {
-      // Сплющенная половинка с продольной складкой посередине
-      ctx.beginPath();
-      ctx.moveTo(0, -24);
-      ctx.bezierCurveTo(22, -26, 32, -6, 26, 10);
-      ctx.bezierCurveTo(20, 26, -6, 30, -20, 18);
-      ctx.bezierCurveTo(-32, 6, -26, -22, 0, -24);
-      ctx.closePath();
-      ctx.fillStyle = radial(ctx, -8, -8, 38, [[0, '#ffc56a'], [0.5, '#f39030'], [1, '#c05a0c']]);
-      ctx.fill();
-      ctx.save();
-      ctx.shadowColor = 'transparent';
-      ctx.beginPath();
-      ctx.moveTo(-2, -22);
-      ctx.bezierCurveTo(6, -8, -6, 8, 2, 24);
-      ctx.strokeStyle = 'rgba(140, 55, 0, .45)';
-      ctx.lineWidth = 2.4;
-      ctx.lineCap = 'round';
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(1, -21);
-      ctx.bezierCurveTo(9, -7, -3, 9, 5, 23);
-      ctx.strokeStyle = 'rgba(255, 220, 160, .35)';
-      ctx.lineWidth = 1.2;
-      ctx.stroke();
-      ctx.restore();
-      lines(ctx, 'rgba(140, 55, 0, .22)', 1, [
-        (c) => { c.moveTo(-18, -6); c.quadraticCurveTo(-12, -2, -14, 6); },
-        (c) => { c.moveTo(16, -10); c.quadraticCurveTo(12, -2, 18, 6); },
-      ]);
-    },
+    walnut: (ctx) => body(ctx,
+      (c) => {
+        // Половинка ядра грецкого ореха: две доли с бороздкой посередине
+        c.beginPath();
+        c.moveTo(0, -24);
+        c.bezierCurveTo(13, -34, 31, -20, 27, -3);
+        c.bezierCurveTo(31, 11, 22, 29, 6, 28);
+        c.bezierCurveTo(3, 30, -3, 30, -6, 28);
+        c.bezierCurveTo(-22, 29, -31, 11, -27, -3);
+        c.bezierCurveTo(-31, -20, -13, -34, 0, -24);
+        c.closePath();
+      },
+      radial(ctx, -6, -8, 40, [[0, '#e8bf7f'], [0.55, '#b98245'], [1, '#6e4219']]),
+      (c) => {
+        // Бугорки долей
+        [[-13, -13], [13, -13], [-14, 9], [14, 9], [-6, 20], [6, 20]].forEach(([x, y]) => gloss(c, x, y, 10, 0.28));
+        // Извилины
+        c.lineCap = 'round';
+        for (let i = 0; i < 26; i++) {
+          const x = rand(-24, 24), y = rand(-24, 24), len = rand(6, 13), a = rand(0, Math.PI * 2);
+          c.strokeStyle = `rgba(90, 50, 15, ${rand(0.3, 0.5)})`;
+          c.lineWidth = rand(1, 1.8);
+          c.beginPath();
+          c.moveTo(x, y);
+          c.bezierCurveTo(x + Math.cos(a + 1) * len * 0.5, y + Math.sin(a + 1) * len * 0.5,
+            x + Math.cos(a - 1) * len * 0.7, y + Math.sin(a - 1) * len * 0.7, x + Math.cos(a) * len, y + Math.sin(a) * len);
+          c.stroke();
+        }
+        // Центральная бороздка
+        c.strokeStyle = 'rgba(70, 35, 8, .65)';
+        c.lineWidth = 3;
+        c.filter = 'blur(0.8px)';
+        c.beginPath(); c.moveTo(0, -24); c.bezierCurveTo(-3, -6, 3, 10, 0, 29); c.stroke();
+        c.filter = 'none';
+        rim(c, 0, 2, 32, 0.5);
+      }),
+    cashew: (ctx) => body(ctx, cashewPath,
+      radial(ctx, -10, 6, 40, [[0, '#fbf0d8'], [0.55, '#e6cb95'], [1, '#b08a50']]),
+      (c) => {
+        speckle(c, 90, 30, 30, 'rgba(170, 125, 70, .16)', [0.3, 1], [0.3, 1]);
+        // Тень во внутреннем изгибе и светлая спинка
+        c.strokeStyle = 'rgba(120, 80, 35, .35)';
+        c.lineWidth = 5;
+        c.filter = 'blur(2px)';
+        c.beginPath(); c.moveTo(9, -4); c.bezierCurveTo(8, 8, 0, 11, -6, 5); c.stroke();
+        c.filter = 'none';
+        c.strokeStyle = 'rgba(255, 248, 230, .55)';
+        c.lineWidth = 3;
+        c.beginPath(); c.moveTo(-17, -14); c.bezierCurveTo(-26, 2, -16, 20, 3, 22); c.stroke();
+        rim(c, 2, 4, 32, 0.4);
+      }),
+    apricot: (ctx) => body(ctx, apricotPath,
+      radial(ctx, -8, -8, 40, [[0, '#ffc066'], [0.5, '#ee8a2c'], [1, '#a9480a']]),
+      (c) => {
+        // Морщинистая поверхность сушёного абрикоса
+        c.filter = 'blur(0.6px)';
+        for (let i = 0; i < 60; i++) {
+          const x = rand(-24, 24), y = rand(-22, 24), len = rand(5, 12), a = rand(0, Math.PI);
+          c.strokeStyle = Math.random() < 0.55 ? 'rgba(130, 45, 0, .16)' : 'rgba(255, 215, 150, .16)';
+          c.lineWidth = rand(1, 2.2);
+          c.beginPath();
+          c.moveTo(x, y);
+          c.quadraticCurveTo(x + Math.cos(a) * len * 0.5 + rand(-3, 3), y + Math.sin(a) * len * 0.5 + rand(-3, 3), x + Math.cos(a) * len, y + Math.sin(a) * len);
+          c.stroke();
+        }
+        c.filter = 'blur(1.2px)';
+        c.strokeStyle = 'rgba(120, 40, 0, .38)';
+        c.lineWidth = 3;
+        c.beginPath(); c.moveTo(-2, -22); c.bezierCurveTo(6, -8, -6, 8, 2, 24); c.stroke();
+        c.filter = 'none';
+        gloss(c, -9, -10, 13, 0.55);
+        gloss(c, 10, 6, 6, 0.25);
+        rim(c, 2, 2, 30, 0.55);
+      }),
   };
   const KINDS = Object.keys(NUTS);
+  // Для мелких орехов (падающих и из ракеты) — только те, что узнаются по силуэту; курага мелкой похожа на шарик
+  const SMALL_KINDS = ['almond', 'hazelnut', 'cashew', 'pistachio', 'walnut'];
   const sprites = Object.fromEntries(KINDS.map((k) => [k, sprite(NUTS[k])]));
-  const rand = (a, b) => a + Math.random() * (b - a);
-  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
   /* ---------- Падающие орехи ---------- */
   let spawnNut = () => {}; // нужен и другим эффектам (горсть из корзины)
@@ -149,8 +243,8 @@
     document.body.append(canvas);
     const ctx = canvas.getContext('2d');
     const nuts = [];
-    const MAX = reduced ? 25 : 70;
-    const TRAIL_GAP = reduced ? 140 : 55; // мс между орехами из курсора
+    const MAX = reduced ? 12 : 28;
+    const TRAIL_GAP = reduced ? 220 : 120; // мс между орехами из курсора
     let running = false;
     let lastSpawn = 0;
     let last = { x: 0, y: 0 };
@@ -171,9 +265,10 @@
         vy: burst ? rand(-8, -3.5) : rand(-2, -0.5),
         rot: rand(0, Math.PI * 2),
         vr: rand(-0.15, 0.15),
-        size: burst ? rand(40, 64) : rand(30, 46),
-        kind: pick(KINDS),
+        size: burst ? rand(24, 34) : rand(20, 26),
+        kind: pick(SMALL_KINDS),
         life: 1,
+        age: 0,
       });
       if (!running) { running = true; requestAnimationFrame(tick); }
     }
@@ -187,7 +282,8 @@
         n.x += n.vx;
         n.y += n.vy;
         n.rot += n.vr;
-        if (n.y > innerHeight - 40) n.life -= 0.04;
+        // Орех живёт около секунды, потом тает
+        if (++n.age > 40 || n.y > innerHeight - 40) n.life -= 0.05;
         if (n.y > innerHeight + 60 || n.life <= 0) { nuts.splice(i, 1); continue; }
         ctx.save();
         ctx.globalAlpha = Math.max(0, n.life);
@@ -217,7 +313,7 @@
     }
     addEventListener('pointerdown', (e) => {
       if (busy() || e.target.closest?.('input, select, textarea')) return;
-      const count = reduced ? 4 : e.pointerType === 'touch' ? 7 : 10;
+      const count = reduced ? 3 : e.pointerType === 'touch' ? 4 : 5;
       for (let i = 0; i < count; i++) spawn(e.clientX, e.clientY, true);
     }, { passive: true });
     spawnNut = spawn;
@@ -261,12 +357,15 @@
 
   function shadeSphere(ctx, R, glow) {
     // Объём: свет слева сверху, тень справа снизу, ободок атмосферы
-    // Один градиент от точки света: блик → цвет планеты → мягкая тень только у дальнего края
+    // Один градиент от точки света: блик → цвет планеты → тень, которая нарастает постепенно, без резкой границы
     const g = ctx.createRadialGradient(-R * 0.4, -R * 0.45, 0, -R * 0.4, -R * 0.45, R * 1.95);
-    g.addColorStop(0, 'rgba(255, 248, 230, .45)');
-    g.addColorStop(0.28, 'rgba(255, 248, 230, 0)');
-    g.addColorStop(0.68, 'rgba(8, 9, 20, 0)');
-    g.addColorStop(1, 'rgba(8, 9, 20, .62)');
+    g.addColorStop(0, 'rgba(255, 248, 230, .42)');
+    g.addColorStop(0.25, 'rgba(255, 248, 230, 0)');
+    g.addColorStop(0.42, 'rgba(8, 9, 20, 0)');
+    g.addColorStop(0.58, 'rgba(8, 9, 20, .08)');
+    g.addColorStop(0.72, 'rgba(8, 9, 20, .2)');
+    g.addColorStop(0.86, 'rgba(8, 9, 20, .34)');
+    g.addColorStop(1, 'rgba(8, 9, 20, .46)');
     ctx.fillStyle = g;
     ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.fill();
     ctx.strokeStyle = glow;
@@ -276,38 +375,99 @@
 
   const CRATERS = Array.from({ length: 16 }, () => ({ lon: rand(0, Math.PI * 2), lat: rand(-1.1, 1.1), r: rand(0.06, 0.17) }));
 
+  // Синяя ракета, нарисованная носом вправо; L — длина
+  function drawRocket(c, L) {
+    c.fillStyle = '#1b3d9a';
+    [-1, 1].forEach((s) => {
+      c.beginPath();
+      c.moveTo(-0.14 * L, 0.15 * L * s);
+      c.lineTo(-0.5 * L, 0.38 * L * s);
+      c.lineTo(-0.42 * L, 0.12 * L * s);
+      c.closePath();
+      c.fill();
+    });
+    const g = c.createLinearGradient(0, -0.2 * L, 0, 0.2 * L);
+    g.addColorStop(0, '#a9d6ff');
+    g.addColorStop(0.4, '#3d84f5');
+    g.addColorStop(1, '#173f9c');
+    c.fillStyle = g;
+    c.beginPath();
+    c.moveTo(0.55 * L, 0);
+    c.quadraticCurveTo(0.3 * L, -0.21 * L, -0.1 * L, -0.19 * L);
+    c.lineTo(-0.42 * L, -0.15 * L);
+    c.quadraticCurveTo(-0.47 * L, 0, -0.42 * L, 0.15 * L);
+    c.lineTo(-0.1 * L, 0.19 * L);
+    c.quadraticCurveTo(0.3 * L, 0.21 * L, 0.55 * L, 0);
+    c.fill();
+    c.fillStyle = '#eef5ff'; // носовой обтекатель
+    c.beginPath();
+    c.moveTo(0.55 * L, 0);
+    c.quadraticCurveTo(0.43 * L, -0.13 * L, 0.33 * L, -0.17 * L);
+    c.lineTo(0.33 * L, 0.17 * L);
+    c.quadraticCurveTo(0.43 * L, 0.13 * L, 0.55 * L, 0);
+    c.fill();
+    c.beginPath(); // иллюминатор
+    c.arc(0.1 * L, 0, 0.075 * L, 0, Math.PI * 2);
+    c.fillStyle = '#d8f0ff';
+    c.fill();
+    c.lineWidth = 0.03 * L;
+    c.strokeStyle = '#0f2a6e';
+    c.stroke();
+    c.fillStyle = '#3a3f55'; // сопло
+    c.fillRect(-0.5 * L, -0.09 * L, 0.08 * L, 0.18 * L);
+  }
+
+  const ORBIT = { tilt: -0.32, rx: 1.62, ry: 0.5 };
+
   function drawNutPlanet(p) {
     const { ctx, R } = p;
     const rot = p.rot;
-    // Кольцо из орехов: наклонённый эллипс, задняя половина рисуется до планеты, передняя — после
-    const ringNuts = p.ring.map((n) => {
-      const a = n.a + rot * 0.8 * n.speed;
-      return { ...n, x: Math.cos(a) * R * n.rx, y: Math.sin(a) * R * 0.32 * n.rx, front: Math.sin(a) > 0 };
-    });
-    const drawRing = (front) => {
+    // Ракета летит по наклонной орбите: за планетой — меньше и бледнее, перед ней — крупнее
+    const a = rot * 1.5;
+    const pos = { x: Math.cos(a) * R * ORBIT.rx, y: Math.sin(a) * R * ORBIT.ry };
+    const dx = -Math.sin(a) * ORBIT.rx, dy = Math.cos(a) * ORBIT.ry;
+    const len = Math.hypot(dx, dy);
+    const dir = { x: dx / len, y: dy / len };
+    const front = Math.sin(a) > 0;
+    const depth = 0.78 + 0.22 * Math.sin(a);
+    const L = R * 0.95 * depth;
+
+    // Выхлоп только из орешков: крупных и редких, чтобы каждый было видно
+    if ((p.frame = (p.frame || 0) + 1) % 7 === 0) {
+      p.trail.push({
+        x: pos.x - dir.x * L * 0.6, y: pos.y - dir.y * L * 0.6,
+        vx: -dir.x * R * 0.016 + rand(-0.2, 0.2), vy: -dir.y * R * 0.016 + rand(-0.2, 0.2),
+        size: R * rand(0.46, 0.58) * depth, rot: rand(0, 6), vr: rand(-0.04, 0.04), life: 1, front, kind: pick(SMALL_KINDS),
+      });
+    }
+    if (p.trail.length > 10) p.trail.shift();
+    p.trail.forEach((t) => { t.x += t.vx; t.y += t.vy; t.rot += t.vr; t.life -= 0.016; t.size *= 0.994; });
+    p.trail = p.trail.filter((t) => t.life > 0);
+
+    const layer = (isFront) => {
       ctx.save();
-      ctx.rotate(-0.32);
-      if (!front) {
-        ctx.strokeStyle = 'rgba(236, 198, 148, .18)';
-        ctx.lineWidth = R * 0.18;
-        ctx.beginPath(); ctx.ellipse(0, 0, R * 1.62, R * 0.52, 0, Math.PI, Math.PI * 2); ctx.stroke();
-      } else {
-        ctx.strokeStyle = 'rgba(236, 198, 148, .22)';
-        ctx.lineWidth = R * 0.18;
-        ctx.beginPath(); ctx.ellipse(0, 0, R * 1.62, R * 0.52, 0, 0, Math.PI); ctx.stroke();
-      }
-      ringNuts.filter((n) => n.front === front).forEach((n) => {
-        const s = n.size * R * (n.front ? 1 : 0.8);
+      ctx.rotate(ORBIT.tilt);
+      p.trail.filter((t) => t.front === isFront).forEach((t) => {
         ctx.save();
-        ctx.translate(n.x, n.y);
-        ctx.rotate(n.spin + rot * 3 * n.speed);
-        ctx.globalAlpha = n.front ? 1 : 0.65;
-        ctx.drawImage(sprites[n.kind], -s / 2, -s / 2, s, s);
+        ctx.globalAlpha = Math.max(0, t.life) * (isFront ? 1 : 0.7);
+        ctx.translate(t.x, t.y);
+        ctx.rotate(t.rot);
+        ctx.drawImage(sprites[t.kind], -t.size / 2, -t.size / 2, t.size, t.size);
         ctx.restore();
       });
+      if (front === isFront) {
+        ctx.save();
+        ctx.translate(pos.x, pos.y);
+        ctx.rotate(Math.atan2(dir.y, dir.x));
+        ctx.globalAlpha = isFront ? 1 : 0.8;
+        ctx.shadowColor = 'rgba(80, 160, 255, .6)';
+        ctx.shadowBlur = R * 0.15;
+        drawRocket(ctx, L);
+        ctx.restore();
+      }
       ctx.restore();
     };
-    drawRing(false);
+    layer(false);
     // Шар с прокручиваемыми полосами
     ctx.save();
     ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.clip();
@@ -317,7 +477,7 @@
     ctx.drawImage(tex, -off - R, -R * 1.15, tex.width, R * 2.3);
     ctx.restore();
     shadeSphere(ctx, R, 'rgba(255, 210, 150, .55)');
-    drawRing(true);
+    layer(true);
   }
 
   function drawApricotPlanet(p) {
@@ -352,8 +512,9 @@
     // Поверхность
     const surf = ctx.createRadialGradient(-R * 0.3, -R * 0.3, R * 0.1, 0, 0, R);
     surf.addColorStop(0, '#ffc266');
-    surf.addColorStop(0.6, '#f08a24');
-    surf.addColorStop(1, '#c2560a');
+    surf.addColorStop(0.45, '#f6992f');
+    surf.addColorStop(0.75, '#e47e1c');
+    surf.addColorStop(1, '#cf6a12');
     ctx.fillStyle = surf;
     ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.fill();
     // Кратеры смещаются при вращении и сжимаются у края — получается объём
@@ -366,9 +527,10 @@
       const x = Math.sin(lon) * Math.cos(c.lat) * R;
       const y = Math.sin(c.lat) * R * 0.85;
       const r = c.r * R;
-      ctx.fillStyle = 'rgba(150, 60, 0, .45)';
+      const fade = Math.min(1, depth * 2.5); // у края кратер плавно исчезает, а не обрывается
+      ctx.fillStyle = `rgba(150, 60, 0, ${0.45 * fade})`;
       ctx.beginPath(); ctx.ellipse(x, y, r * depth, r, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = 'rgba(255, 210, 140, .35)';
+      ctx.fillStyle = `rgba(255, 210, 140, ${0.35 * fade})`;
       ctx.beginPath(); ctx.ellipse(x - r * 0.18 * depth, y - r * 0.18, r * 0.7 * depth, r * 0.7, 0, 0, Math.PI * 2); ctx.fill();
     });
     ctx.restore();
@@ -383,14 +545,7 @@
       canvas.setAttribute('aria-hidden', 'true');
       span.append(canvas);
       const p = { span, canvas, ctx: canvas.getContext('2d'), kind: i === 0 ? 'nut' : 'apricot', rot: rand(0, 6), boost: 0, boostRate: 1 };
-      p.ring = Array.from({ length: 22 }, (_, k) => ({
-        a: (k / 22) * Math.PI * 2 + rand(-0.1, 0.1),
-        rx: rand(1.45, 1.8),
-        size: rand(0.2, 0.32),
-        speed: rand(0.9, 1.15),
-        spin: rand(0, 6),
-        kind: pick(KINDS),
-      }));
+      p.trail = []; // орешки из сопла ракеты
       planets.push(p);
       span.classList.add('planet--live');
     });
@@ -435,6 +590,161 @@
     });
   }
 
+  /* ---------- Космос за разделами и каталогом ---------- */
+  // Звёзды трёх слоёв глубины, туманности и далёкие планеты. Фон сдвигается только вместе с мышкой:
+  // мышка стоит — стоит и космос. Холст без ретины (dpr 1): зона высокая, а звёздам чёткость не нужна.
+  document.querySelectorAll('.cosmos-zone').forEach((zone) => {
+    const cv = document.createElement('canvas');
+    cv.className = 'cosmos-bg';
+    cv.setAttribute('aria-hidden', 'true');
+    zone.prepend(cv);
+    const g = cv.getContext('2d');
+    const LAYERS = [
+      { density: 0.00011, speed: 0.12, size: [0.4, 0.9] },
+      { density: 0.00005, speed: 0.3, size: [0.8, 1.5] },
+      { density: 0.000015, speed: 0.6, size: [1.4, 2.2] },
+    ];
+    let W = 0, H = 0, stars = [], blobs = [], worlds = [], ox = 0, oy = 0, raf = 0, visible = false;
+
+    const build = () => {
+      W = zone.offsetWidth;
+      H = zone.offsetHeight;
+      if (!W || !H) return;
+      cv.width = W; cv.height = H;
+      cv.style.width = `${W}px`; cv.style.height = `${H}px`;
+      stars = LAYERS.flatMap((l, li) => Array.from({ length: Math.round(W * H * l.density) }, () => ({
+        x: rand(0, W), y: rand(0, H), r: rand(...l.size), li, a: rand(0.45, 1),
+        c: pick(['255, 255, 255', '255, 231, 201', '207, 224, 255', '255, 244, 224']),
+      })));
+      blobs = [
+        { x: 0.18, y: 0.12, r: 0.5, c: '240, 138, 36', a: 0.16 },
+        { x: 0.85, y: 0.35, r: 0.55, c: '110, 90, 230', a: 0.18 },
+        { x: 0.3, y: 0.62, r: 0.5, c: '50, 120, 255', a: 0.14 },
+        { x: 0.75, y: 0.9, r: 0.45, c: '220, 80, 140', a: 0.12 },
+      ];
+      worlds = [
+        { x: 0.92, y: 0.08, r: 26, c1: '#8fb8ff', c2: '#22356e', ring: true },
+        { x: 0.06, y: 0.48, r: 14, c1: '#ffcf8a', c2: '#8a3d10' },
+        { x: 0.88, y: 0.78, r: 18, c1: '#c9a6ff', c2: '#3a2470' },
+      ];
+      draw();
+    };
+
+    const wrap = (v, max) => ((v % max) + max) % max;
+    function draw() {
+      raf = 0;
+      g.fillStyle = '#070915';
+      g.fillRect(0, 0, W, H);
+      blobs.forEach((b) => {
+        const x = b.x * W + ox * 0.05, y = b.y * H + oy * 0.05, r = b.r * Math.max(W, 700);
+        const gr = g.createRadialGradient(x, y, 0, x, y, r);
+        gr.addColorStop(0, `rgba(${b.c}, ${b.a})`);
+        gr.addColorStop(1, `rgba(${b.c}, 0)`);
+        g.fillStyle = gr;
+        g.fillRect(x - r, y - r, r * 2, r * 2);
+      });
+      stars.forEach((s) => {
+        const sp = LAYERS[s.li].speed;
+        const x = wrap(s.x + ox * sp, W), y = wrap(s.y + oy * sp, H);
+        g.fillStyle = `rgba(${s.c}, ${s.a})`;
+        g.beginPath(); g.arc(x, y, s.r, 0, Math.PI * 2); g.fill();
+        if (s.li === 2) { // яркие звёзды с лучиками
+          g.strokeStyle = `rgba(${s.c}, ${s.a * 0.35})`;
+          g.lineWidth = 0.6;
+          g.beginPath(); g.moveTo(x - s.r * 3, y); g.lineTo(x + s.r * 3, y); g.moveTo(x, y - s.r * 3); g.lineTo(x, y + s.r * 3); g.stroke();
+        }
+      });
+      worlds.forEach((p) => {
+        const x = p.x * W + ox * 0.2, y = p.y * H + oy * 0.2;
+        const gr = g.createRadialGradient(x - p.r * 0.4, y - p.r * 0.4, p.r * 0.1, x, y, p.r);
+        gr.addColorStop(0, p.c1);
+        gr.addColorStop(1, p.c2);
+        g.fillStyle = gr;
+        g.beginPath(); g.arc(x, y, p.r, 0, Math.PI * 2); g.fill();
+        if (p.ring) {
+          g.strokeStyle = 'rgba(200, 220, 255, .45)';
+          g.lineWidth = 2;
+          g.beginPath(); g.ellipse(x, y, p.r * 1.9, p.r * 0.5, -0.35, 0, Math.PI * 2); g.stroke();
+        }
+      });
+    }
+
+    build();
+    new ResizeObserver(() => {
+      if (zone.offsetWidth !== W || Math.abs(zone.offsetHeight - H) > 2) build();
+    }).observe(zone);
+    // Пока зона за экраном, сдвиг копится без перерисовки; при появлении рисуем актуальное положение
+    new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible && !raf) raf = requestAnimationFrame(draw); }).observe(zone);
+    if (!reduced && hasMouse) {
+      addEventListener('pointermove', (e) => {
+        if (e.pointerType === 'touch') return;
+        ox += e.movementX * 0.9;
+        oy += e.movementY * 0.9;
+        if (visible && !raf) raf = requestAnimationFrame(draw);
+      }, { passive: true });
+    }
+
+    // Время от времени за карточками пролетает ракета из логотипа и сыплет орешками
+    if (!reduced) {
+      const next = () => setTimeout(fly, rand(6000, 12000));
+      const fly = () => {
+        if (!visible || document.hidden) return next();
+        const zr = zone.getBoundingClientRect();
+        const top = Math.max(0, -zr.top) + 80, bottom = Math.min(zr.height, innerHeight - zr.top) - 80;
+        if (bottom <= top) return next();
+        const dir = Math.random() < 0.5 ? 1 : -1;
+        const x0 = dir > 0 ? -160 : W + 160, x1 = dir > 0 ? W + 160 : -160;
+        const y0 = rand(top, bottom), y1 = y0 + rand(-180, 180);
+        const ang = Math.atan2(y1 - y0, x1 - x0);
+        const rocket = new Image();
+        rocket.src = rocketURL();
+        rocket.className = 'cosmos-rocket';
+        rocket.alt = '';
+        zone.insertBefore(rocket, cv.nextSibling);
+        const duration = rand(5500, 8000), t0 = performance.now();
+        rocket.animate([
+          { transform: `translate(${x0}px, ${y0}px) rotate(${ang}rad)` },
+          { transform: `translate(${x1}px, ${y1}px) rotate(${ang}rad)` },
+        ], { duration, easing: 'linear' }).onfinish = () => { rocket.remove(); clearInterval(puff); next(); };
+        // Выхлоп: орешки появляются у сопла, отстают от ракеты и тают
+        const puff = setInterval(() => {
+          const k = Math.min(1, (performance.now() - t0) / duration);
+          const x = x0 + (x1 - x0) * k - Math.cos(ang) * 50, y = y0 + (y1 - y0) * k - Math.sin(ang) * 50;
+          const nut = new Image();
+          nut.src = spriteURL(pick(SMALL_KINDS));
+          nut.className = 'cosmos-nut';
+          nut.alt = '';
+          zone.insertBefore(nut, rocket);
+          const back = 70 + rand(0, 40), spin = rand(-180, 180);
+          nut.animate([
+            { transform: `translate(${x}px, ${y}px) rotate(0deg) scale(1)`, opacity: 1 },
+            { transform: `translate(${x - Math.cos(ang) * back}px, ${y - Math.sin(ang) * back + rand(10, 40)}px) rotate(${spin}deg) scale(.7)`, opacity: 0 },
+          ], { duration: 1600, easing: 'ease-out' }).onfinish = () => nut.remove();
+        }, 170);
+      };
+      next();
+    }
+  });
+
+  // Картинки для DOM-эффектов: ракета и орехи, нарисованные на canvas, кэшируются один раз
+  let rocketCache;
+  function rocketURL() {
+    if (!rocketCache) {
+      const L = 120, c = document.createElement('canvas');
+      c.width = L * 1.15 * dpr; c.height = L * 0.85 * dpr;
+      const x = c.getContext('2d');
+      x.scale(dpr, dpr);
+      x.translate(L * 0.58, L * 0.425);
+      x.shadowColor = 'rgba(80, 160, 255, .7)';
+      x.shadowBlur = 14;
+      drawRocket(x, L);
+      rocketCache = c.toDataURL();
+    }
+    return rocketCache;
+  }
+  const spriteCache = {};
+  const spriteURL = (k) => (spriteCache[k] ||= sprites[k].toDataURL());
+
   /* ---------- Парящие орехи на первом экране ---------- */
   const hero = document.querySelector('.hero');
   if (hero) {
@@ -447,7 +757,7 @@
       { k: 'almond', x: 90, y: 13, s: 84, d: 0.8, r: 32 },
       { k: 'apricot', x: 5, y: 66, s: 120, d: 1.6, r: 10 },
       { k: 'hazelnut', x: 94, y: 60, s: 96, d: 1.1, r: -8 },
-      { k: 'cashew', x: 30, y: 92, s: 70, d: 0.6, r: 30 },
+      { k: 'walnut', x: 30, y: 92, s: 78, d: 0.6, r: 20 },
       { k: 'almond', x: 64, y: 93, s: 80, d: 1.3, r: -50 },
       { k: 'pistachio', x: 70, y: 5, s: 52, d: 0.4, r: 70 },
       { k: 'cashew', x: 28, y: 6, s: 46, d: 0.3, r: -30 },
@@ -536,7 +846,7 @@
     document.body.append(ghost);
     const finish = () => {
       ghost.remove();
-      for (let i = 0; i < (reduced ? 3 : 6); i++) spawnNut(to.left + to.width / 2, to.top + to.height / 2, true);
+      for (let i = 0; i < 3; i++) spawnNut(to.left + to.width / 2, to.top + to.height / 2, true);
     };
     if (reduced || !ghost.animate) return finish();
     ghost.animate([
@@ -559,7 +869,7 @@
     dot.setAttribute('aria-hidden', 'true');
     document.body.append(ring, dot);
     let mx = 0, my = 0, rx = 0, ry = 0, raf = 0;
-    const hide = () => { ring.classList.remove('is-on'); dot.classList.remove('is-on'); };
+    const hide = () => { ring.classList.remove('is-on', 'is-hot'); dot.classList.remove('is-on'); };
     const follow = () => {
       rx += (mx - rx) * 0.35;
       ry += (my - ry) * 0.35;
@@ -581,6 +891,10 @@
     }, { passive: true });
     // Мышь ушла за пределы окна или окно потеряло фокус — прячем, чтобы кольцо не застревало у края
     document.addEventListener('mouseout', (e) => { if (!e.relatedTarget) hide(); });
+    // Клик открыл корзину или окно — прячем сразу, не дожидаясь движения мыши
+    document.addEventListener('click', () => setTimeout(() => {
+      if (document.body.style.overflow === 'hidden') hide();
+    }));
     addEventListener('blur', hide);
 
     /* «Магнитные» кнопки */
@@ -660,7 +974,7 @@
       void planet.offsetWidth; // перезапуск анимации
       planet.classList.add('is-spinning');
       const r = planet.getBoundingClientRect();
-      for (let i = 0; i < 16; i++) spawnNut(r.left + r.width / 2, r.top + r.height / 2, true);
+      for (let i = 0; i < 7; i++) spawnNut(r.left + r.width / 2, r.top + r.height / 2, true);
     });
   });
 
@@ -668,8 +982,8 @@
   let greeted = false;
   try { greeted = sessionStorage.getItem('cosmo-greeted') === '1'; sessionStorage.setItem('cosmo-greeted', '1'); } catch {}
   if (!greeted) {
-    for (let i = 0; i < 22; i++) {
-      setTimeout(() => spawnNut(rand(40, innerWidth - 40), rand(-80, -30), false), 700 + i * rand(40, 90));
+    for (let i = 0; i < 10; i++) {
+      setTimeout(() => spawnNut(rand(40, innerWidth - 40), rand(-60, -20), false), 700 + i * rand(60, 110));
     }
   }
 

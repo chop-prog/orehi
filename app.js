@@ -155,7 +155,7 @@ function updateCart() {
   // Убираем из сохранённой корзины товары, которых больше нет в каталоге
   state.cart = state.cart.filter((i) => findProduct(i.id));
   save('orehi-cart', state.cart);
-  const { freeShipping, minOrder } = CATALOG.settings;
+  const { minOrder } = CATALOG.settings;
   const total = cartTotal();
   const count = state.cart.reduce((s, i) => s + i.qty, 0);
 
@@ -169,12 +169,6 @@ function updateCart() {
 
   $('#mobileCart').hidden = count === 0;
   $('#mobileCartInfo').textContent = `${count} шт. · ${rub(total)}`;
-
-  const left = freeShipping - total;
-  $('#freeShip').innerHTML = (left > 0
-    ? `До бесплатной доставки СДЭК: <b>${rub(left)}</b>`
-    : 'Доставка в пункт СДЭК — бесплатно') +
-    `<div class="free-ship__bar"><i style="width:${Math.min(100, (total / freeShipping) * 100)}%"></i></div>`;
 
   $('#cartList').innerHTML = state.cart.length
     ? state.cart.map((i, idx) => {
@@ -256,20 +250,15 @@ function lockScroll() {
 }
 
 /* ---------- Доставка ---------- */
-function shippingCost(method) {
-  const d = CATALOG.settings.delivery[method];
-  if (d.freeFromThreshold && cartTotal() >= CATALOG.settings.freeShipping) return 0;
-  return d.price;
-}
+const shippingCost = (method) => CATALOG.settings.delivery[method].price;
 
 function renderDelivery() {
   const entries = Object.entries(CATALOG.settings.delivery);
-  const { freeShipping } = CATALOG.settings;
   $('#deliveryCards').innerHTML = entries.map(([, d]) => `
     <div class="delivery__card">
       <h3>${d.title}</h3>
       <p>${d.note[0].toUpperCase() + d.note.slice(1)}</p>
-      <b>${d.price ? rub(d.price) : 'Бесплатно'}${d.freeFromThreshold ? `, от ${rub(freeShipping)} — бесплатно` : ''}</b>
+      <b>${d.price ? rub(d.price) : 'Бесплатно'}</b>
     </div>`).join('');
   $('#deliveryOptions').innerHTML = entries.map(([key, d], i) => `
     <label class="radio">

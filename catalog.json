@@ -14,7 +14,6 @@
     "demo": true
   },
   "settings": {
-    "freeShipping": 3000,
     "minOrder": 500,
     "weights": [
       100,
@@ -28,7 +27,6 @@
         "title": "Пункт выдачи СДЭК",
         "note": "по всей России, 2–5 дней",
         "price": 290,
-        "freeFromThreshold": true,
         "needsAddress": true,
         "addressLabel": "Город и адрес пункта СДЭК",
         "addressPlaceholder": "Казань, ул. Баумана, 44",
@@ -38,7 +36,6 @@
         "title": "Самовывоз",
         "note": "м. Таганская, в день заказа",
         "price": 0,
-        "freeFromThreshold": false,
         "needsAddress": false
       }
     }

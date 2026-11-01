@@ -13,8 +13,8 @@
   <meta property="og:image" content="https://images.unsplash.com/photo-1710857397974-f0617001c39e?w=1200&h=630&fit=crop&q=80">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%230b0d18'/><circle cx='16' cy='16' r='7' fill='%23f08a24'/><ellipse cx='16' cy='16' rx='13' ry='4' fill='none' stroke='%23f4efe6' stroke-width='1.6' transform='rotate(-20 16 16)'/></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=12">
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Onest:wght@400;500;600;700&family=Russo+One&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=16">
 </head>
 <body>
   <a class="skip-link" href="#catalog">Перейти к каталогу</a>
@@ -22,7 +22,22 @@
   <header class="header">
     <div class="container header__inner">
       <a href="#" class="logo" aria-label="Cosmo — на главную">
-        <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="7" fill="currentColor"/><ellipse cx="16" cy="16" rx="14" ry="4.5" fill="none" stroke="currentColor" stroke-width="1.6" transform="rotate(-20 16 16)"/></svg>
+        <!-- Планета с орбитой; по орбите летает мини-ракета -->
+        <svg viewBox="0 0 32 32" aria-hidden="true" overflow="visible">
+          <ellipse cx="16" cy="16" rx="14" ry="4.5" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".55" transform="rotate(-20 16 16)"/>
+          <circle cx="16" cy="16" r="7" fill="currentColor"/>
+          <g transform="rotate(-20 16 16)">
+            <g class="logo-rocket">
+              <g transform="scale(1.5)">
+              <path d="M-1.4,-1.2 L-3.8,-2.9 L-3.1,-0.9Z M-1.4,1.2 L-3.8,2.9 L-3.1,0.9Z" fill="#1b3d9a"/>
+              <path d="M3.6,0 Q2,-1.6 -1.2,-1.45 L-3.1,-1.2 Q-3.6,0 -3.1,1.2 L-1.2,1.45 Q2,1.6 3.6,0Z" fill="#3d84f5"/>
+              <path d="M3.6,0 Q2.8,-0.9 2.2,-1.15 L2.2,1.15 Q2.8,0.9 3.6,0Z" fill="#eef5ff"/>
+              <circle cx="0.5" cy="0" r="0.6" fill="#d8f0ff"/>
+              </g>
+              <animateMotion dur="3.4s" repeatCount="indefinite" rotate="auto" path="M30,16 A14,4.5 0 1,1 2,16 A14,4.5 0 1,1 30,16"/>
+            </g>
+          </g>
+        </svg>
         <span data-shop="name">Cosmo</span>
       </a>
       <nav class="nav" aria-label="Разделы">
@@ -69,7 +84,9 @@
   </div>
 
   <main>
-    <section class="section section--cream" id="worlds">
+    <!-- Разделы и каталог на общем космическом фоне (холст рисует effects.js) -->
+    <div class="cosmos-zone">
+    <section class="section section--cosmos" id="worlds">
       <div class="container">
         <p class="eyebrow">Разделы</p>
         <h2 class="h-display">Три галактики вкуса</h2>
@@ -93,7 +110,7 @@
       </div>
     </section>
 
-    <section class="section section--cream section--tight" id="catalog">
+    <section class="section section--cosmos section--tight" id="catalog">
       <div class="container">
         <div class="section__head">
           <div>
@@ -117,6 +134,7 @@
         <p class="empty" id="empty" hidden>По запросу ничего не нашлось. Попробуйте другое название.</p>
       </div>
     </section>
+    </div>
 
     <section class="section section--accent" id="how">
       <div class="container how">
@@ -139,11 +157,12 @@
         <div><b>15</b><span>видов орехов и сухофруктов</span></div>
         <div><b>100 г</b><span>минимальная фасовка</span></div>
         <div><b>2–5</b><span>дней доставки по России</span></div>
-        <div><b>3 000 ₽</b><span>и доставка бесплатно</span></div>
+        <div><b>500 ₽</b><span>минимальный заказ</span></div>
       </div>
     </section>
 
-    <section class="section section--cream" id="gifts">
+    <div class="cosmos-zone">
+    <section class="section section--cosmos" id="gifts">
       <div class="container split">
         <img class="split__img" src="img/1769255484233-94ece98f722d.jpg" alt="Наборы орехов в пиалах" loading="lazy" width="500" height="400">
         <div>
@@ -160,7 +179,7 @@
       </div>
     </section>
 
-    <section class="section section--cream section--tight" id="delivery">
+    <section class="section section--cosmos section--tight" id="delivery">
       <div class="container">
         <p class="eyebrow">Доставка и оплата</p>
         <h2 class="h-display">Как получить заказ</h2>
@@ -172,19 +191,20 @@
       </div>
     </section>
 
-    <section class="section section--cream" id="faq">
+    <section class="section section--cosmos" id="faq">
       <div class="container container--narrow">
         <p class="eyebrow">Вопросы</p>
         <h2 class="h-display">Частые вопросы</h2>
         <details class="faq"><summary>Как хранить орехи и сухофрукты?</summary><p>Храните в закрытом пакете или стеклянной банке в сухом прохладном месте, при температуре не выше +20 °C. Очищенные орехи летом лучше держать в холодильнике: так они дольше не горчат.</p></details>
         <details class="faq"><summary>Можно ли изменить заказ после оформления?</summary><p>Да. Скажите об этом менеджеру, когда он позвонит для подтверждения, или напишите нам в Telegram до отправки заказа.</p></details>
         <details class="faq"><summary>Почему вес в заказе может немного отличаться?</summary><p>Мы фасуем вручную, поэтому возможна погрешность ±3%. Если вес окажется меньше, разницу пересчитаем в вашу пользу.</p></details>
-        <details class="faq"><summary>Есть ли минимальная сумма заказа?</summary><p>Минимальный заказ — 500 ₽. Доставка в пункт выдачи СДЭК бесплатна от 3 000 ₽.</p></details>
+        <details class="faq"><summary>Есть ли минимальная сумма заказа?</summary><p>Минимальный заказ — 500 ₽. Доставка в пункт выдачи СДЭК стоит 290 ₽ по всей России, самовывоз бесплатный.</p></details>
         <details class="faq"><summary>Как отследить посылку?</summary><p>После отправки СДЭК присылает SMS с трек-номером. По нему можно следить за посылкой на сайте или в приложении СДЭК. Когда заказ придёт в пункт выдачи, вы получите ещё одно уведомление.</p></details>
         <details class="faq"><summary>Не испортятся ли продукты в дороге?</summary><p>Орехи и сухофрукты спокойно переносят доставку до двух недель. Мы упаковываем их в плотные пакеты с zip-замком и картонную коробку, чтобы ничего не помялось.</p></details>
         <details class="faq"><summary>Что делать, если товар не понравился?</summary><p>Напишите нам в течение 14 дней и приложите фото. Мы заменим товар или вернём деньги.</p></details>
       </div>
     </section>
+    </div>
 
     <section class="section section--space" id="contacts">
       <div class="stars" aria-hidden="true"></div>
@@ -224,7 +244,6 @@
       <h2>Корзина</h2>
       <button class="icon-btn" id="cartClose" aria-label="Закрыть корзину">✕</button>
     </div>
-    <div class="free-ship" id="freeShip"></div>
     <ul class="cart-list" id="cartList"></ul>
     <div class="drawer__foot">
       <div class="total"><span>Товары</span><b id="cartTotal">0 ₽</b></div>
@@ -273,8 +292,8 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="shop.js?v=12"></script>
-  <script src="app.js?v=12"></script>
-  <script src="effects.js?v=12"></script>
+  <script src="shop.js?v=16"></script>
+  <script src="app.js?v=16"></script>
+  <script src="effects.js?v=16"></script>
 </body>
 </html>
