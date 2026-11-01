@@ -563,7 +563,8 @@
     const follow = () => {
       rx += (mx - rx) * 0.35;
       ry += (my - ry) * 0.35;
-      ring.style.transform = `translate(${rx}px, ${ry}px)`;
+      // Свойство translate, а не transform: иначе увеличение над кнопками (scale) умножало бы и сдвиг
+      ring.style.translate = `${rx}px ${ry}px`;
       raf = Math.abs(mx - rx) + Math.abs(my - ry) > 0.3 ? requestAnimationFrame(follow) : 0;
     };
     addEventListener('pointermove', (e) => {
@@ -572,7 +573,7 @@
       if (off) return hide();
       if (!ring.classList.contains('is-on')) { rx = e.clientX; ry = e.clientY; }
       mx = e.clientX; my = e.clientY;
-      dot.style.transform = `translate(${mx}px, ${my}px)`;
+      dot.style.translate = `${mx}px ${my}px`;
       ring.classList.add('is-on');
       dot.classList.add('is-on');
       ring.classList.toggle('is-hot', !!e.target.closest?.('a, button, .card__img, .world, summary, label'));
