@@ -562,3 +562,24 @@ html.fx .h-display.by-words.reveal { opacity: 1; transform: none; }
 .drop.is-full { scale: 1; }
 :root:root .drop-host.is-dropped:not(.theme-switch) { color: var(--drop-ink); border-color: var(--drop-color); background-color: transparent; transition: color .3s, border-color .3s; }
 :root:root .drop-host:is(.btn--accent, .btn--primary, .chip.active, .mode.active).is-dropped { background-color: var(--accent); }
+/* ---------- Фон за каталогом и разделами: туманности и пунктирные орбиты (днём и ночью) ---------- */
+.cosmos-zone::before, .cosmos-zone::after { content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+.cosmos-zone::before {
+  background:
+    radial-gradient(520px circle at 10% 15%, rgba(240, 138, 36, .2), transparent 65%),
+    radial-gradient(460px circle at 92% 50%, rgba(124, 92, 230, .18), transparent 65%),
+    radial-gradient(400px circle at 35% 88%, rgba(60, 150, 255, .12), transparent 65%);
+  background-size: 100% 1300px; animation: nebula 22s ease-in-out infinite alternate; }
+@keyframes nebula { to { background-position: 0 120px; opacity: .65; } }
+.cosmos-zone::after { background: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'1600'%20height%3D'1300'%20viewBox%3D'0%200%201600%201300'%3E%3Cg%20fill%3D'none'%20stroke%3D'rgb(150%2C150%2C175)'%20stroke-opacity%3D'.28'%20stroke-width%3D'1.5'%20stroke-dasharray%3D'6%2010'%3E%3Cellipse%20cx%3D'300'%20cy%3D'260'%20rx%3D'520'%20ry%3D'150'%20transform%3D'rotate(-14%20300%20260)'%2F%3E%3Cellipse%20cx%3D'1300'%20cy%3D'900'%20rx%3D'600'%20ry%3D'170'%20transform%3D'rotate(10%201300%20900)'%2F%3E%3C%2Fg%3E%3Cg%20fill%3D'none'%20stroke%3D'rgb(240%2C138%2C36)'%20stroke-opacity%3D'.35'%20stroke-width%3D'1.5'%3E%3Ccircle%20cx%3D'1420'%20cy%3D'180'%20r%3D'46'%2F%3E%3Ccircle%20cx%3D'160'%20cy%3D'1050'%20r%3D'30'%2F%3E%3C%2Fg%3E%3Cg%20fill%3D'rgb(240%2C138%2C36)'%20fill-opacity%3D'.5'%3E%3Ccircle%20cx%3D'812'%20cy%3D'252'%20r%3D'5'%2F%3E%3Ccircle%20cx%3D'1810'%20cy%3D'900'%20r%3D'4'%2F%3E%3Ccircle%20cx%3D'700'%20cy%3D'1000'%20r%3D'4'%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E") center top / 1600px 1300px repeat; animation: orbit-drift 60s linear infinite; }
+@keyframes orbit-drift { to { background-position: 400px 1300px; } }
+/* ---------- Недовольный орешек: появляется снизу справа перед дневной темой ---------- */
+.grumpy { position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); z-index: 70; display: flex; align-items: flex-end; flex-direction: row-reverse; gap: 6px; pointer-events: none; opacity: 0; translate: 0 130%; transition: translate .55s cubic-bezier(.3, 1.5, .5, 1), opacity .3s; }
+.grumpy.show { opacity: 1; translate: 0 0; }
+.grumpy svg { width: 92px; height: 92px; flex-shrink: 0; transform-origin: 50% 90%; }
+.grumpy.show svg { animation: grumble .35s ease-in-out .5s 4 alternate; }
+@keyframes grumble { from { rotate: -6deg; } to { rotate: 6deg; } }
+.grumpy__bubble { position: relative; max-width: 230px; margin-bottom: 52px; padding: 12px 16px; border-radius: 18px 18px 4px 18px; background: #ffffff; color: #1d1b26; font-size: 13.5px; line-height: 1.4; box-shadow: 0 10px 30px rgba(0, 0, 0, .35); }
+.grumpy__bubble b { display: block; font-family: var(--display); font-size: 12px; text-transform: uppercase; letter-spacing: .03em; color: #d8700c; margin-bottom: 2px; }
+body:has(.mobile-cart:not([hidden])) .grumpy { bottom: 84px; }
+@media (max-width: 520px) { .grumpy svg { width: 72px; height: 72px; } .grumpy__bubble { max-width: 190px; margin-bottom: 40px; font-size: 12.5px; } }
