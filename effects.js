@@ -229,53 +229,6 @@
   /* ---------- Живые планеты вместо «О» в слове COSMO ---------- */
   // Фото внутри .planet остаётся запасным вариантом, если canvas недоступен
   const planets = [];
-  function makeBands(R) {
-    // Длинная полосатая «развёртка» планеты; при вращении она прокручивается внутри круга
-    const w = Math.ceil(R * 4), h = Math.ceil(R * 2);
-    const c = document.createElement('canvas');
-    c.width = w; c.height = h;
-    const g = c.getContext('2d');
-    const colors = ['#9a5a2c', '#b8743e', '#d49a5e', '#ecc58e', '#f6dcae', '#c88446', '#a8673a', '#e7b47a', '#c27b40'];
-    let y = 0;
-    while (y < h) {
-      const bh = rand(h * 0.04, h * 0.13);
-      g.fillStyle = pick(colors);
-      g.fillRect(0, y, w, bh + 1);
-      y += bh;
-    }
-    // Волнистые завихрения и «пятна бурь»
-    for (let i = 0; i < 70; i++) {
-      g.globalAlpha = rand(0.15, 0.4);
-      g.fillStyle = pick(colors);
-      g.beginPath();
-      g.ellipse(rand(0, w), rand(0, h), rand(R * 0.1, R * 0.5), rand(R * 0.02, R * 0.06), 0, 0, Math.PI * 2);
-      g.fill();
-    }
-    g.globalAlpha = 0.9;
-    g.fillStyle = '#f2d2a2';
-    g.beginPath(); g.ellipse(w * 0.3, h * 0.62, R * 0.22, R * 0.11, 0, 0, Math.PI * 2); g.fill();
-    g.fillStyle = '#9a5a2c';
-    g.beginPath(); g.ellipse(w * 0.3, h * 0.62, R * 0.13, R * 0.06, 0, 0, Math.PI * 2); g.fill();
-    // Копия первой половины в конец — бесшовная прокрутка
-    g.globalAlpha = 1;
-    g.drawImage(c, 0, 0, w / 2, h, w / 2, 0, w / 2, h);
-    return c;
-  }
-
-  function shadeSphere(ctx, R) {
-    // Объём: свет слева сверху, тень справа снизу.
-    // Один градиент от точки света: блик → цвет планеты → тень, которая нарастает постепенно, без резкой границы
-    const g = ctx.createRadialGradient(-R * 0.4, -R * 0.45, 0, -R * 0.4, -R * 0.45, R * 1.95);
-    g.addColorStop(0, 'rgba(255, 248, 230, .42)');
-    g.addColorStop(0.25, 'rgba(255, 248, 230, 0)');
-    g.addColorStop(0.42, 'rgba(8, 9, 20, 0)');
-    g.addColorStop(0.58, 'rgba(8, 9, 20, .08)');
-    g.addColorStop(0.72, 'rgba(8, 9, 20, .2)');
-    g.addColorStop(0.86, 'rgba(8, 9, 20, .34)');
-    g.addColorStop(1, 'rgba(8, 9, 20, .46)');
-    ctx.fillStyle = g;
-    ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.fill();
-  }
 
   // Синяя ракета, нарисованная носом вправо; L — длина
   function drawRocket(c, L) {
@@ -321,69 +274,6 @@
 
   const CRATERS = Array.from({ length: 16 }, () => ({ lon: rand(0, Math.PI * 2), lat: rand(-1.1, 1.1), r: rand(0.06, 0.17) }));
 
-  const ORBIT = { tilt: -0.32, rx: 1.62, ry: 0.5 };
-
-  function drawNutPlanet(p) {
-    const { ctx, R } = p;
-    const rot = p.rot;
-    // Ракета летит по наклонной орбите: за планетой — меньше и бледнее, перед ней — крупнее
-    const a = rot * 1.5;
-    const pos = { x: Math.cos(a) * R * ORBIT.rx, y: Math.sin(a) * R * ORBIT.ry };
-    const dx = -Math.sin(a) * ORBIT.rx, dy = Math.cos(a) * ORBIT.ry;
-    const len = Math.hypot(dx, dy);
-    const dir = { x: dx / len, y: dy / len };
-    const front = Math.sin(a) > 0;
-    const depth = 0.78 + 0.22 * Math.sin(a);
-    const L = R * 0.95 * depth;
-
-    // Выхлоп только из орешков: крупных и редких, чтобы каждый было видно
-    if ((p.frame = (p.frame || 0) + 1) % 7 === 0) {
-      p.trail.push({
-        x: pos.x - dir.x * L * 0.6, y: pos.y - dir.y * L * 0.6,
-        vx: -dir.x * R * 0.016 + rand(-0.2, 0.2), vy: -dir.y * R * 0.016 + rand(-0.2, 0.2),
-        size: R * rand(0.46, 0.58) * depth, rot: rand(0, 6), vr: rand(-0.04, 0.04), life: 1, front, kind: pick(KINDS),
-      });
-    }
-    if (p.trail.length > 10) p.trail.shift();
-    p.trail.forEach((t) => { t.x += t.vx; t.y += t.vy; t.rot += t.vr; t.life -= 0.016; t.size *= 0.994; });
-    p.trail = p.trail.filter((t) => t.life > 0);
-
-    const layer = (isFront) => {
-      ctx.save();
-      ctx.rotate(ORBIT.tilt);
-      p.trail.filter((t) => t.front === isFront).forEach((t) => {
-        ctx.save();
-        ctx.globalAlpha = Math.max(0, t.life) * (isFront ? 1 : 0.7);
-        ctx.translate(t.x, t.y);
-        ctx.rotate(t.rot);
-        ctx.drawImage(sprites[t.kind], -t.size / 2, -t.size / 2, t.size, t.size);
-        ctx.restore();
-      });
-      if (front === isFront) {
-        ctx.save();
-        ctx.translate(pos.x, pos.y);
-        ctx.rotate(Math.atan2(dir.y, dir.x));
-        ctx.globalAlpha = isFront ? 1 : 0.8;
-        ctx.shadowColor = 'rgba(80, 160, 255, .6)';
-        ctx.shadowBlur = R * 0.15;
-        drawRocket(ctx, L);
-        ctx.restore();
-      }
-      ctx.restore();
-    };
-    layer(false);
-    // Шар с прокручиваемыми полосами
-    ctx.save();
-    ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.clip();
-    ctx.rotate(-0.32);
-    const tex = p.tex, tw = tex.width / 2;
-    const off = (rot * tw / (Math.PI * 2)) % tw;
-    ctx.drawImage(tex, -off - R, -R * 1.15, tex.width, R * 2.3);
-    ctx.restore();
-    shadeSphere(ctx, R);
-    layer(true);
-  }
-
   // Контур миндалины: острый кончик сверху, округлое донце снизу
   function almondPath(ctx, w, h) {
     ctx.beginPath();
@@ -393,7 +283,6 @@
     ctx.bezierCurveTo(-w * 1.06, -h * 0.1, -w * 0.62, -h * 0.72, 0, -h);
     ctx.closePath();
   }
-
   // Миндалина в центре координат: w, h — полуширина и полувысота, spin — поворот вокруг своей оси
   function drawAlmond(ctx, w0, h, spin) {
     const w = w0 * (0.86 + 0.14 * Math.cos(spin));
@@ -493,14 +382,201 @@
     if (moonFront) drawMoon();
   }
 
+  // Мультяшная ракета: белый корпус, красные нос и стабилизаторы, синий иллюминатор, пламя из сопла.
+  // Нарисована носом вправо; L — длина, flick — фаза мерцания пламени
+  function drawCartoonRocket(c, L, flick) {
+    // Пламя
+    const fl = 0.42 + 0.08 * Math.sin(flick * 9) + 0.04 * Math.sin(flick * 23);
+    const fire = c.createLinearGradient(-0.42 * L, 0, -(0.42 + fl) * L, 0);
+    fire.addColorStop(0, '#fff3b0');
+    fire.addColorStop(0.35, '#ffb52e');
+    fire.addColorStop(0.75, '#ff6a1a');
+    fire.addColorStop(1, 'rgba(255, 80, 20, 0)');
+    c.fillStyle = fire;
+    c.beginPath();
+    c.moveTo(-0.4 * L, -0.11 * L);
+    c.quadraticCurveTo(-(0.45 + fl * 0.6) * L, -0.1 * L, -(0.42 + fl) * L, 0);
+    c.quadraticCurveTo(-(0.45 + fl * 0.6) * L, 0.1 * L, -0.4 * L, 0.11 * L);
+    c.closePath();
+    c.fill();
+    // Стабилизаторы
+    c.fillStyle = '#e8473c';
+    [-1, 1].forEach((s) => {
+      c.beginPath();
+      c.moveTo(-0.08 * L, 0.16 * L * s);
+      c.quadraticCurveTo(-0.3 * L, 0.24 * L * s, -0.44 * L, 0.36 * L * s);
+      c.lineTo(-0.38 * L, 0.12 * L * s);
+      c.closePath();
+      c.fill();
+    });
+    // Корпус
+    const body = c.createLinearGradient(0, -0.2 * L, 0, 0.2 * L);
+    body.addColorStop(0, '#ffffff');
+    body.addColorStop(0.55, '#e9ecf2');
+    body.addColorStop(1, '#b9c0cc');
+    c.fillStyle = body;
+    c.beginPath();
+    c.moveTo(0.56 * L, 0);
+    c.bezierCurveTo(0.4 * L, -0.24 * L, 0 * L, -0.22 * L, -0.4 * L, -0.15 * L);
+    c.quadraticCurveTo(-0.45 * L, 0, -0.4 * L, 0.15 * L);
+    c.bezierCurveTo(0 * L, 0.22 * L, 0.4 * L, 0.24 * L, 0.56 * L, 0);
+    c.fill();
+    // Красный нос
+    c.save();
+    c.clip();
+    c.fillStyle = '#e8473c';
+    c.fillRect(0.3 * L, -0.3 * L, 0.3 * L, 0.6 * L);
+    c.fillStyle = 'rgba(255, 255, 255, .35)';
+    c.fillRect(0.3 * L, -0.3 * L, 0.3 * L, 0.12 * L);
+    c.restore();
+    // Сопло
+    c.fillStyle = '#8a92a3';
+    c.fillRect(-0.47 * L, -0.08 * L, 0.08 * L, 0.16 * L);
+    // Иллюминатор
+    c.beginPath();
+    c.arc(0.1 * L, 0, 0.085 * L, 0, Math.PI * 2);
+    c.fillStyle = '#dfe5ee';
+    c.fill();
+    c.beginPath();
+    c.arc(0.1 * L, 0, 0.062 * L, 0, Math.PI * 2);
+    const glass = c.createRadialGradient(0.08 * L, -0.02 * L, 0, 0.1 * L, 0, 0.062 * L);
+    glass.addColorStop(0, '#9fd2ff');
+    glass.addColorStop(1, '#1f5fd1');
+    c.fillStyle = glass;
+    c.fill();
+    c.beginPath();
+    c.arc(0.085 * L, -0.02 * L, 0.018 * L, 0, Math.PI * 2);
+    c.fillStyle = 'rgba(255, 255, 255, .85)';
+    c.fill();
+  }
+
+  const ORBIT2 = { tilt: 0.3, rx: 1.6, ry: 0.48 };
+
+  // Первая «О» — круглый орех макадамия, вокруг него летает мультяшная ракета
+  function drawMacadamiaPlanet(p) {
+    const { ctx, R } = p;
+    const rot = p.rot;
+    const a = rot * 1.4 + Math.PI;
+    const pos = { x: Math.cos(a) * R * ORBIT2.rx, y: Math.sin(a) * R * ORBIT2.ry };
+    const dx = -Math.sin(a) * ORBIT2.rx, dy = Math.cos(a) * ORBIT2.ry;
+    const front = Math.sin(a) > 0;
+    const depth = 0.78 + 0.22 * Math.sin(a);
+    const drawShip = () => {
+      ctx.save();
+      ctx.rotate(ORBIT2.tilt);
+      ctx.translate(pos.x, pos.y);
+      ctx.rotate(Math.atan2(dy, dx));
+      ctx.globalAlpha = front ? 1 : 0.8;
+      ctx.shadowColor = 'rgba(255, 140, 40, .45)';
+      ctx.shadowBlur = R * 0.15;
+      drawCartoonRocket(ctx, R * 0.95 * depth, rot * 12);
+      ctx.restore();
+    };
+    if (!front) drawShip();
+
+    // Гладкая блестящая скорлупа макадамии: плавный градиент от блика к тени
+    const shell = ctx.createRadialGradient(-R * 0.38, -R * 0.4, 0, -R * 0.38, -R * 0.4, R * 1.8);
+    [[0, '#cf9258'], [0.16, '#b97a42'], [0.34, '#9e6131'], [0.52, '#844e25'], [0.7, '#6b3d1d'],
+      [0.86, '#552f16'], [1, '#432411']]
+      .forEach(([o, c]) => shell.addColorStop(o, c));
+    ctx.fillStyle = shell;
+    ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.fill();
+
+    ctx.save();
+    ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.clip();
+    // Точка на сфере по долготе и широте; d > 0 — на видимой стороне
+    const onSphere = (lon, lat) => ({ x: Math.sin(lon) * Math.cos(lat) * R, y: Math.sin(lat) * R, d: Math.cos(lon) * Math.cos(lat) });
+    // Шов скорлупы — меридиан, который поворачивается вместе с орехом
+    const seam = rot;
+    if (Math.cos(seam) > 0) {
+      ctx.lineCap = 'round';
+      [['rgba(50, 25, 8, .45)', 0], ['rgba(255, 220, 170, .18)', R * 0.025]].forEach(([color, shift]) => {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = R * 0.03;
+        ctx.beginPath();
+        for (let t = -1.45; t <= 1.45; t += 0.05) {
+          const pt = onSphere(seam, t);
+          if (t === -1.45) ctx.moveTo(pt.x + shift, pt.y); else ctx.lineTo(pt.x + shift, pt.y);
+        }
+        ctx.stroke();
+      });
+    }
+    // Светлый «глазок» у основания ореха
+    const eye = onSphere(rot + 1.3, -0.62);
+    if (eye.d > 0.05) {
+      const k = Math.min(1, eye.d * 2);
+      ctx.fillStyle = `rgba(232, 200, 150, ${0.85 * k})`;
+      ctx.beginPath(); ctx.ellipse(eye.x, eye.y, R * 0.13 * Math.cos(rot + 1.3), R * 0.09, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = `rgba(120, 70, 30, ${0.6 * k})`;
+      ctx.beginPath(); ctx.ellipse(eye.x, eye.y, R * 0.05 * Math.cos(rot + 1.3), R * 0.035, 0, 0, Math.PI * 2); ctx.fill();
+    }
+    // Глянцевый блик — скорлупа макадамии гладкая и блестит
+    const gl = ctx.createRadialGradient(-R * 0.42, -R * 0.45, 0, -R * 0.42, -R * 0.45, R * 0.55);
+    gl.addColorStop(0, 'rgba(255, 240, 215, .55)');
+    gl.addColorStop(1, 'rgba(255, 240, 215, 0)');
+    ctx.fillStyle = gl;
+    ctx.fillRect(-R, -R, R * 2, R * 2);
+    ctx.fillStyle = 'rgba(255, 255, 255, .55)';
+    ctx.beginPath(); ctx.ellipse(-R * 0.45, -R * 0.5, R * 0.13, R * 0.07, -0.6, 0, Math.PI * 2); ctx.fill();
+    // Расколотая скорлупа: в большом сколе всегда видно кремовое ядро — так сразу понятно, что это орех
+    const cx = R * 0.3, cy = -R * 0.2;
+    const hole = [[-0.42, 0.02], [-0.34, -0.2], [-0.22, -0.16], [-0.12, -0.36], [0.04, -0.3], [0.16, -0.46],
+      [0.3, -0.3], [0.44, -0.2], [0.4, 0], [0.48, 0.14], [0.32, 0.26], [0.16, 0.22], [0.02, 0.4],
+      [-0.12, 0.26], [-0.28, 0.32], [-0.36, 0.16]];
+    const holePath = (scale) => {
+      ctx.beginPath();
+      hole.forEach(([px, py], i) => {
+        const x = cx + px * R * scale, y = cy + py * R * scale;
+        if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y);
+      });
+      ctx.closePath();
+    };
+    // Толщина скорлупы по краю скола — светлая полоска
+    ctx.fillStyle = '#d8b07c';
+    holePath(1.1); ctx.fill();
+    ctx.fillStyle = '#3b200d';
+    holePath(1.0); ctx.fill();
+    // Ядро: кремовый шарик с тенью от скорлупы
+    ctx.save();
+    holePath(0.94); ctx.clip();
+    const kern = ctx.createRadialGradient(cx + R * 0.1, cy - R * 0.12, 0, cx, cy, R * 0.62);
+    kern.addColorStop(0, '#fffdf6');
+    kern.addColorStop(0.45, '#f6ead0');
+    kern.addColorStop(0.8, '#e2cb9c');
+    kern.addColorStop(1, '#bfa06c');
+    ctx.fillStyle = kern;
+    ctx.beginPath(); ctx.arc(cx + R * 0.04, cy + R * 0.02, R * 0.56, 0, Math.PI * 2); ctx.fill();
+    // Тень от края скорлупы на ядре
+    const rim = ctx.createRadialGradient(cx, cy, R * 0.28, cx, cy, R * 0.6);
+    rim.addColorStop(0, 'rgba(90, 55, 20, 0)');
+    rim.addColorStop(1, 'rgba(90, 55, 20, .45)');
+    ctx.fillStyle = rim;
+    ctx.fillRect(cx - R, cy - R, R * 2, R * 2);
+    ctx.fillStyle = 'rgba(255, 255, 255, .7)';
+    ctx.beginPath(); ctx.ellipse(cx + R * 0.12, cy - R * 0.14, R * 0.09, R * 0.05, -0.5, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+    // Трещинки, расходящиеся от скола
+    ctx.strokeStyle = 'rgba(40, 20, 6, .55)';
+    ctx.lineWidth = R * 0.022;
+    ctx.lineCap = 'round';
+    [[[-0.46, 0.06], [-0.6, 0.12], [-0.72, 0.05]], [[0.02, 0.44], [0.0, 0.58], [0.08, 0.7]], [[0.5, 0.16], [0.62, 0.3]]]
+      .forEach((line) => {
+        ctx.beginPath();
+        line.forEach(([px, py], i) => { const x = cx + px * R, y = cy + py * R; if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y); });
+        ctx.stroke();
+      });
+    ctx.restore();
+
+    if (front) drawShip();
+  }
+
   function initPlanets() {
     document.querySelectorAll('.planet').forEach((span, i) => {
       const canvas = document.createElement('canvas');
       canvas.className = 'planet__canvas';
       canvas.setAttribute('aria-hidden', 'true');
       span.append(canvas);
-      const p = { span, canvas, ctx: canvas.getContext('2d'), kind: i === 0 ? 'nut' : 'apricot', rot: rand(0, 6), boost: 0, boostRate: 1 };
-      p.trail = []; // орешки из сопла ракеты
+      const p = { span, canvas, ctx: canvas.getContext('2d'), kind: i === 0 ? 'macadamia' : 'apricot', rot: rand(0, 6), boost: 0, boostRate: 1 };
       planets.push(p);
       span.classList.add('planet--live');
     });
@@ -515,7 +591,6 @@
       p.canvas.style.width = p.canvas.style.height = `${size}px`;
       p.canvas.width = p.canvas.height = Math.round(size * dpr);
       p.R = S / 2;
-      p.tex = makeBands(p.R);
     });
   }
 
@@ -528,7 +603,7 @@
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.translate(canvas.width / dpr / 2, canvas.height / dpr / 2);
-      if (p.kind === 'nut') drawNutPlanet(p);
+      if (p.kind === 'macadamia') drawMacadamiaPlanet(p);
       else drawApricotPlanet(p);
     });
   }
