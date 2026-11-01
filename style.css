@@ -131,13 +131,8 @@ h1, h2, h3 { text-wrap: balance; }
 .tools #search { width: 260px; }
 .tools #sort { width: 190px; }
 
-/* Космос за разделами и каталогом: холст .cosmos-bg рисует effects.js, без него — тёмный фон */
+/* Тёмные зоны за разделами, каталогом, подарками, доставкой и вопросами */
 .cosmos-zone { position: relative; background: #070915; overflow: hidden; }
-.cosmos-bg { position: absolute; left: 0; top: 0; pointer-events: none; }
-/* Ракета и её орешки летят между звёздами и карточками (z-index ниже контента) */
-.cosmos-rocket, .cosmos-nut { position: absolute; left: 0; top: 0; pointer-events: none; }
-.cosmos-rocket { width: 138px; margin: -51px 0 0 -69px; }
-.cosmos-nut { width: 30px; margin: -15px 0 0 -15px; }
 .section--cosmos { background: transparent; color: var(--cream); }
 .section--cosmos > .container { position: relative; z-index: 1; }
 .section--cosmos .eyebrow { color: var(--accent); }
@@ -163,6 +158,29 @@ h1, h2, h3 { text-wrap: balance; }
 .world:hover .world__arrow { background: var(--accent); color: var(--accent-ink); }
 
 /* Каталог */
+/* Вкладки каталога: розница / опт */
+.modes { display: inline-flex; gap: 4px; padding: 4px; margin-top: 28px; border-radius: 999px; background: var(--paper); border: 1px solid var(--line); }
+.mode { padding: 12px 22px; border: 0; border-radius: 999px; background: transparent; font-family: var(--display); font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; cursor: pointer; transition: background .2s, color .2s; }
+.mode:hover { color: var(--accent); }
+.mode.active { background: var(--accent); color: var(--accent-ink); }
+.mode-note { margin-top: 12px; color: var(--muted); font-size: 14px; max-width: 680px; }
+.mode-note + .chips { margin-top: 18px; }
+.tag.tag--opt { background: #2bb673; color: #06210f; }
+
+/* Опт: количество в килограммах */
+.kg { display: flex; align-items: center; gap: 6px; }
+.kg__btn { width: 34px; height: 34px; flex-shrink: 0; border-radius: 50%; border: 1.5px solid var(--line); background: none; font-size: 18px; font-weight: 700; cursor: pointer; }
+.kg__btn:hover { border-color: var(--accent); color: var(--accent); }
+.kg__field { flex: 1; display: flex; align-items: center; gap: 6px; padding: 0 12px; height: 34px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--cream-2); }
+.kg__field:focus-within { border-color: var(--accent); }
+.kg__input { width: 100%; min-width: 0; border: 0; background: none; outline: none; font-weight: 700; text-align: right; -moz-appearance: textfield; }
+.kg__input::-webkit-outer-spin-button, .kg__input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.kg__field span { color: var(--muted); font-size: 13px; }
+.cart-item__opt { display: inline-block; padding: 1px 7px; border-radius: 999px; background: #2bb673; color: #06210f; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+.pm__opt { padding: 10px 14px; border-radius: 12px; background: rgba(43, 182, 115, .12); border: 1px solid rgba(43, 182, 115, .35); font-size: 14px; }
+.field__opt { color: var(--muted); font-weight: 500; }
+.field__note { margin-top: -6px; color: var(--muted); font-size: 13px; }
+
 .chips { display: flex; gap: 8px; flex-wrap: wrap; margin: 28px 0; }
 .chip { padding: 10px 18px; border-radius: 999px; border: 1.5px solid var(--line); background: transparent; font-family: var(--display); font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; cursor: pointer; transition: .2s; }
 .chip:hover { border-color: var(--ink); }
@@ -341,13 +359,6 @@ html.fx .reveal.is-in { opacity: 1; transform: none; }
 /* Товар летит в корзину */
 .fly-to-cart { position: fixed; z-index: 65; object-fit: cover; border-radius: 50%; pointer-events: none; box-shadow: 0 12px 30px rgba(11, 13, 24, .35); }
 
-/* Курсор-орбита: тонкое кольцо догоняет точку на кончике курсора; над кнопками чуть увеличивается */
-.cursor-orbit, .cursor-dot { position: fixed; left: 0; top: 0; z-index: 70; border-radius: 50%; pointer-events: none; opacity: 0; transition: opacity .2s; }
-.cursor-orbit { width: 30px; height: 30px; margin: -15px 0 0 -15px; border: 1.5px solid var(--accent); transition: opacity .2s, scale .2s; }
-.cursor-dot { width: 6px; height: 6px; margin: -3px 0 0 -3px; background: var(--accent); }
-.cursor-orbit.is-on { opacity: .75; }
-.cursor-dot.is-on { opacity: 1; }
-.cursor-orbit.is-on.is-hot { scale: 1.35; opacity: .5; }
 
 /* Магнитные кнопки и карточки с наклоном */
 .is-magnet { transition: translate .15s ease-out, background .2s, color .2s; }
@@ -458,6 +469,13 @@ html.fx .h-display.by-words.reveal { opacity: 1; transform: none; }
   .card__foot { flex-direction: column; align-items: stretch; }
   .card .btn--sm { width: 100%; }
   .tag { top: 8px; left: 8px; font-size: 9px; }
+  .kg { gap: 4px; }
+  .kg__btn { width: 28px; height: 28px; font-size: 15px; }
+  .kg__field { height: 30px; padding: 0 8px; gap: 3px; }
+  .kg__input { text-align: center; font-size: 14px; }
+  .kg__field span { font-size: 11px; }
+  .modes { display: flex; }
+  .mode { flex: 1; padding: 11px 10px; font-size: 11px; }
   .price { font-size: 17px; }
   .steps li { grid-template-columns: 52px 1fr; }
   .steps li::before { font-size: 30px; }

@@ -12,11 +12,13 @@ const TAGS = { hit: 'Хит продаж', new: 'Новинка', gift: 'Под�
 
 let CATALOG; // { shop, settings, categories, products }
 const state = {
+  mode: 'retail', // 'retail' — розница, 'opt' — опт от minKg за кг
   cat: 'all',
   query: '',
   sort: 'popular',
-  weights: {}, // выбранная фасовка по id товара
-  cart: load('orehi-cart', []), // [{ id, grams, qty }]
+  weights: {}, // выбранная фасовка по id товара (розница)
+  optKg: {}, // выбранное количество в кг по id товара (опт)
+  cart: load('orehi-cart', []), // розница: { id, grams, qty }; опт: { id, opt: true, kg }
 };
 
 function load(key, fallback) {
@@ -28,6 +30,25 @@ function save(key, value) {
 
 const findProduct = (id) => CATALOG.products.find((p) => p.id === id);
 const weightOf = (p) => (p.fixed ? null : state.weights[p.id] ?? CATALOG.settings.defaultWeight);
+const OPT = () => CATALOG.settings.wholesale; // { minKg, stepKg }
+const optKgOf = (p) => state.optKg[p.id] ?? OPT().minKg;
+// Количество в кг: не меньше минимума и кратно шагу (так же проверяет server.py)
+const normalizeKg = (kg) => Math.max(OPT().minKg, Math.round((+kg || 0) / OPT().stepKg) * OPT().stepKg);
+const itemTotal = (i) => {
+  const p = findProduct(i.id);
+  return i.opt ? p.wholesale * i.kg : priceFor(p, i.grams) * i.qty;
+};
+
+/* ---------- Розница / опт ---------- */
+function renderMode() {
+  document.querySelectorAll('[data-mode]').forEach((b) => {
+    b.classList.toggle('active', b.dataset.mode === state.mode);
+    b.setAttribute('aria-selected', b.dataset.mode === state.mode);
+  });
+  $('#modeNote').textContent = state.mode === 'opt'
+    ? `Опт: цена за килограмм, от ${OPT().minKg} кг каждой позиции. Доставку и оплату менеджер согласует с вами после заявки.`
+    : 'Розница: фасовка от 100 г. Доставку менеджер согласует с вами после заказа.';
+}
 
 /* ---------- Каталог ---------- */
 function renderCategories() {
@@ -39,14 +60,16 @@ function renderCategories() {
 
 function visibleProducts() {
   const q = state.query.trim().toLowerCase();
+  const opt = state.mode === 'opt';
   const list = CATALOG.products.filter(
-    (p) => (state.cat === 'all' || p.cat === state.cat) &&
+    (p) => (!opt || p.wholesale) && (state.cat === 'all' || p.cat === state.cat) &&
       (!q || (p.title + ' ' + p.desc + ' ' + p.origin).toLowerCase().includes(q))
   );
+  const cost = (p) => (opt ? p.wholesale : p.price);
   const sorters = {
     popular: (a, b) => b.popular - a.popular,
-    cheap: (a, b) => a.price - b.price,
-    expensive: (a, b) => b.price - a.price,
+    cheap: (a, b) => cost(a) - cost(b),
+    expensive: (a, b) => cost(b) - cost(a),
     name: (a, b) => a.title.localeCompare(b.title, 'ru'),
   };
   return list.sort(sorters[state.sort]);
@@ -64,22 +87,39 @@ function priceBlock(p) {
   return `<div class="price">${rub(priceFor(p, weightOf(p)))}${p.fixed ? '' : `<small>${rub(p.price)} за кг</small>`}</div>`;
 }
 
+// Опт: выбор количества в килограммах кнопками ± (шаг) или вводом с клавиатуры
+function kgControls(p) {
+  const { minKg, stepKg } = OPT();
+  return `<div class="kg">
+    <button class="kg__btn" data-kg="-1" data-id="${p.id}" aria-label="Меньше на ${stepKg} кг">−</button>
+    <label class="kg__field"><input class="kg__input" type="number" inputmode="numeric" min="${minKg}" step="${stepKg}"
+      value="${optKgOf(p)}" data-kg-input="${p.id}" aria-label="${p.title}: количество, кг"><span>кг</span></label>
+    <button class="kg__btn" data-kg="1" data-id="${p.id}" aria-label="Больше на ${stepKg} кг">+</button>
+  </div>`;
+}
+
+function optPriceBlock(p) {
+  const kg = optKgOf(p);
+  return `<div class="price">${rub(p.wholesale)}<small>за кг · ${rub(p.wholesale * kg)} за ${kg.toLocaleString('ru-RU')} кг</small></div>`;
+}
+
 function renderProducts() {
   const list = visibleProducts();
+  const opt = state.mode === 'opt';
   $('#empty').hidden = list.length > 0;
   $('#products').innerHTML = list.map((p) => `
-    <article class="card">
+    <article class="card${opt ? ' card--opt' : ''}">
       <button class="card__img" data-open="${p.id}" aria-label="Подробнее: ${p.title}">
         <img src="${imgUrl(p.img, 600, 480)}" alt="${p.title}" loading="lazy" width="300" height="240">
-        ${p.tag ? `<span class="tag tag--${p.tag}">${TAGS[p.tag]}</span>` : ''}
+        ${opt ? `<span class="tag tag--opt">Опт от ${OPT().minKg} кг</span>` : p.tag ? `<span class="tag tag--${p.tag}">${TAGS[p.tag]}</span>` : ''}
       </button>
       <div class="card__body">
         <button class="card__title" data-open="${p.id}">${p.title}</button>
         <div class="card__origin">${p.origin}</div>
-        ${weightButtons(p)}
+        ${opt ? kgControls(p) : weightButtons(p)}
         <div class="card__foot">
-          ${priceBlock(p)}
-          <button class="btn btn--primary btn--sm" data-add="${p.id}">В корзину</button>
+          ${opt ? optPriceBlock(p) : priceBlock(p)}
+          <button class="btn btn--primary btn--sm" ${opt ? `data-add-opt="${p.id}"` : `data-add="${p.id}"`}>В корзину</button>
         </div>
       </div>
     </article>`).join('');
@@ -111,6 +151,7 @@ function renderProductModal() {
           <div><b>${carbs}</b><span>углеводы, г</span></div>
         </div>
         <p class="hint hint--left">Пищевая ценность на 100 г</p>
+        ${p.wholesale ? `<p class="pm__opt">Опт от ${OPT().minKg} кг: <b>${rub(p.wholesale)} за кг</b> — во вкладке «Опт» каталога</p>` : ''}
         ${weightButtons(p)}
         <div class="card__foot">
           ${priceBlock(p)}
@@ -127,7 +168,27 @@ function openProduct(id) {
 }
 
 /* ---------- Корзина ---------- */
-const cartTotal = () => state.cart.reduce((s, i) => s + priceFor(findProduct(i.id), i.grams) * i.qty, 0);
+const cartTotal = () => state.cart.reduce((s, i) => s + itemTotal(i), 0);
+const cartCount = () => state.cart.reduce((s, i) => s + (i.opt ? 1 : i.qty), 0);
+
+function bumpCart() {
+  const btn = $('#cartOpen');
+  btn.classList.remove('bump');
+  void btn.offsetWidth; // перезапуск анимации
+  btn.classList.add('bump');
+}
+
+function addOpt(id) {
+  const p = findProduct(id);
+  const kg = optKgOf(p);
+  const item = state.cart.find((i) => i.opt && i.id === id);
+  if (item) item.kg += kg;
+  else state.cart.push({ id, opt: true, kg });
+  updateCart();
+  window.reachGoal('add_to_cart');
+  toast(`В корзине: ${p.title}, опт ${kg.toLocaleString('ru-RU')} кг`);
+  bumpCart();
+}
 
 function addToCart(id) {
   const p = findProduct(id);
@@ -138,26 +199,33 @@ function addToCart(id) {
   updateCart();
   window.reachGoal('add_to_cart');
   toast(`Добавлено: ${p.title}${p.fixed ? '' : ', ' + weightLabel(grams)}`);
-  const btn = $('#cartOpen');
-  btn.classList.remove('bump');
-  void btn.offsetWidth; // перезапуск анимации
-  btn.classList.add('bump');
+  bumpCart();
 }
 
+// ± в корзине: в рознице меняет число упаковок, в опте — килограммы с шагом stepKg
 function changeQty(index, delta) {
   const item = state.cart[index];
-  item.qty = Math.min(99, item.qty + delta);
-  if (item.qty <= 0) state.cart.splice(index, 1);
+  if (item.opt) {
+    item.kg += delta * OPT().stepKg;
+    if (item.kg < OPT().minKg) state.cart.splice(index, 1);
+  } else {
+    item.qty = Math.min(99, item.qty + delta);
+    if (item.qty <= 0) state.cart.splice(index, 1);
+  }
   updateCart();
 }
 
 function updateCart() {
   // Убираем из сохранённой корзины товары, которых больше нет в каталоге
-  state.cart = state.cart.filter((i) => findProduct(i.id));
+  // (и старые позиции с выбранной раньше доставкой/фасовкой, которых больше нет)
+  state.cart = state.cart.filter((i) => {
+    const p = findProduct(i.id);
+    return p && (i.opt ? p.wholesale && Number.isInteger(i.kg) : true);
+  });
   save('orehi-cart', state.cart);
   const { minOrder } = CATALOG.settings;
   const total = cartTotal();
-  const count = state.cart.reduce((s, i) => s + i.qty, 0);
+  const count = cartCount();
 
   $('#cartCount').textContent = count;
   $('#cartCount').hidden = count === 0;
@@ -173,21 +241,23 @@ function updateCart() {
   $('#cartList').innerHTML = state.cart.length
     ? state.cart.map((i, idx) => {
         const p = findProduct(i.id);
-        const price = priceFor(p, i.grams);
+        const meta = i.opt
+          ? `<span class="cart-item__opt">опт</span> ${rub(p.wholesale)} за кг`
+          : `${p.fixed ? 'набор' : weightLabel(i.grams)} · ${rub(priceFor(p, i.grams))}`;
         return `
           <li class="cart-item">
             <img class="cart-item__img" src="${imgUrl(p.img, 120)}" alt="">
             <div>
               <div class="cart-item__title">${p.title}</div>
-              <div class="cart-item__meta">${p.fixed ? 'набор' : weightLabel(i.grams)} · ${rub(price)}</div>
+              <div class="cart-item__meta">${meta}</div>
               <div class="qty">
                 <button data-qty="-1" data-idx="${idx}" aria-label="Уменьшить">−</button>
-                <span>${i.qty}</span>
+                <span>${i.opt ? `${i.kg.toLocaleString('ru-RU')} кг` : i.qty}</span>
                 <button data-qty="1" data-idx="${idx}" aria-label="Увеличить">+</button>
               </div>
             </div>
             <div>
-              <div class="cart-item__price">${rub(price * i.qty)}</div>
+              <div class="cart-item__price">${rub(itemTotal(i))}</div>
               <button class="cart-item__remove" data-remove="${idx}">Удалить</button>
             </div>
           </li>`;
@@ -249,46 +319,17 @@ function lockScroll() {
   document.body.style.overflow = anyOpen ? 'hidden' : '';
 }
 
-/* ---------- Доставка ---------- */
-const shippingCost = (method) => CATALOG.settings.delivery[method].price;
-
-function renderDelivery() {
-  const entries = Object.entries(CATALOG.settings.delivery);
-  $('#deliveryCards').innerHTML = entries.map(([, d]) => `
-    <div class="delivery__card">
-      <h3>${d.title}</h3>
-      <p>${d.note[0].toUpperCase() + d.note.slice(1)}</p>
-      <b>${d.price ? rub(d.price) : 'Бесплатно'}</b>
-    </div>`).join('');
-  $('#deliveryOptions').innerHTML = entries.map(([key, d], i) => `
-    <label class="radio">
-      <input type="radio" name="delivery" value="${key}" ${i === 0 ? 'checked' : ''}>
-      <span><b>${d.title}</b><small>${d.note}</small></span>
-      <em data-ship="${key}"></em>
-    </label>`).join('');
-}
-
 /* ---------- Оформление заказа ---------- */
+// Доставки в расчёте нет: после заказа менеджер связывается с покупателем и договаривается о ней
 const form = $('#orderForm');
 
 function renderSummary() {
-  const method = form.delivery.value;
   const goods = cartTotal();
-  const ship = shippingCost(method);
-  const d = CATALOG.settings.delivery[method];
-  $('#addressField').hidden = !d.needsAddress;
-  $('#addressLabel').textContent = d.addressLabel || 'Адрес';
-  form.address.placeholder = d.addressPlaceholder || '';
-  $('#addressMap').hidden = !d.mapUrl;
-  if (d.mapUrl) $('#addressMap').href = d.mapUrl;
-  form.querySelectorAll('[data-ship]').forEach((el) => {
-    const cost = shippingCost(el.dataset.ship);
-    el.textContent = cost ? rub(cost) : 'бесплатно';
-  });
+  const optKg = state.cart.filter((i) => i.opt).reduce((s, i) => s + i.kg, 0);
   $('#summary').innerHTML = `
-    <div><span>Товары (${state.cart.reduce((s, i) => s + i.qty, 0)} шт.)</span><span>${rub(goods)}</span></div>
-    <div><span>Доставка</span><span>${ship ? rub(ship) : 'бесплатно'}</span></div>
-    <div class="summary__total"><span>Итого</span><span>${rub(goods + ship)}</span></div>`;
+    <div><span>Позиций в заказе</span><span>${state.cart.length}${optKg ? ` · опт ${optKg.toLocaleString('ru-RU')} кг` : ''}</span></div>
+    <div><span>Доставка</span><span>по договорённости</span></div>
+    <div class="summary__total"><span>Итого за товары</span><span>${rub(goods)}</span></div>`;
 }
 
 function openCheckout() {
@@ -299,7 +340,6 @@ function openCheckout() {
   for (const key of ['name', 'phone', 'address']) {
     if (saved[key] && !form[key].value) form[key].value = saved[key];
   }
-  if (saved.delivery && CATALOG.settings.delivery[saved.delivery]) form.delivery.value = saved.delivery;
   renderSummary();
   showModal('#checkoutModal', true);
   (form.name.value ? form.querySelector('[type="submit"]') : form.name).focus();
@@ -316,8 +356,6 @@ function validate() {
   mark(form.name, form.name.value.trim().length >= 2);
   const digits = form.phone.value.replace(/\D/g, '');
   mark(form.phone, digits.length === 11 && digits[1] === '9');
-  const needsAddress = CATALOG.settings.delivery[form.delivery.value].needsAddress;
-  mark(form.address, !needsAddress || form.address.value.trim().length >= 5);
   form.consent.closest('.consent').classList.toggle('invalid', !form.consent.checked);
   if (!form.consent.checked) ok = false;
   return ok;
@@ -351,14 +389,13 @@ async function submitOrder(e) {
   try {
     // Демо-копия для показа (shop.demo в catalog.json): сервера нет, заказ не отправляется
     const res = CATALOG.shop.demo
-      ? new Response(JSON.stringify({ number: 'ДЕМО', total: cartTotal() + shippingCost(form.delivery.value) }))
+      ? new Response(JSON.stringify({ number: 'ДЕМО', total: cartTotal() }))
       : await fetch('api/order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: form.name.value.trim(),
           phone: form.phone.value,
-          delivery: form.delivery.value,
           address: form.address.value.trim(),
           comment: form.comment.value.trim(),
           consent: form.consent.checked,
@@ -370,7 +407,7 @@ async function submitOrder(e) {
 
     const name = form.name.value.trim();
     const phone = form.phone.value;
-    save('orehi-customer', { name, phone, address: form.address.value.trim(), delivery: form.delivery.value });
+    save('orehi-customer', { name, phone, address: form.address.value.trim() });
     window.reachGoal('order', { order_price: data.total });
     state.cart = [];
     updateCart();
@@ -384,7 +421,7 @@ async function submitOrder(e) {
       <div class="success">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>
         <h2>Заказ № ${esc(data.number)} оформлен</h2>
-        <p>${esc(name)}, спасибо! Менеджер позвонит на ${esc(phone)} в рабочее время, чтобы подтвердить заказ на ${rub(data.total)}.</p>
+        <p>${esc(name)}, спасибо! Менеджер позвонит на ${esc(phone)} в рабочее время, чтобы подтвердить заказ на ${rub(data.total)} и договориться о доставке.</p>
         <button type="button" class="btn btn--primary" data-close>Вернуться в магазин</button>
       </div>`;
   } catch (err) {
@@ -416,6 +453,13 @@ $('#categories').addEventListener('click', (e) => {
   renderProducts();
 });
 $('#search').addEventListener('input', (e) => { state.query = e.target.value; renderProducts(); });
+// Ввод килограммов вручную: при уходе из поля приводим к минимуму и шагу
+$('#products').addEventListener('change', (e) => {
+  const input = e.target.closest('[data-kg-input]');
+  if (!input) return;
+  state.optKg[input.dataset.kgInput] = normalizeKg(input.value);
+  renderProducts();
+});
 $('#sort').addEventListener('change', (e) => { state.sort = e.target.value; renderProducts(); });
 
 // Выбор фасовки, добавление и открытие карточки — общие для каталога и окна товара
@@ -429,6 +473,22 @@ document.addEventListener('click', (e) => {
   }
   const add = e.target.closest('[data-add]');
   if (add) { addToCart(+add.dataset.add); return; }
+  const addO = e.target.closest('[data-add-opt]');
+  if (addO) { addOpt(+addO.dataset.addOpt); return; }
+  const kgBtn = e.target.closest('[data-kg]');
+  if (kgBtn) {
+    const p = findProduct(+kgBtn.dataset.id);
+    state.optKg[p.id] = normalizeKg(optKgOf(p) + +kgBtn.dataset.kg * OPT().stepKg);
+    renderProducts();
+    return;
+  }
+  const mode = e.target.closest('[data-mode]');
+  if (mode) {
+    state.mode = mode.dataset.mode;
+    renderMode();
+    renderProducts();
+    return;
+  }
   const world = e.target.closest('[data-goto-cat]');
   if (world) {
     state.cat = world.dataset.gotoCat;
@@ -497,7 +557,6 @@ document.addEventListener('keydown', (e) => {
 });
 
 form.addEventListener('change', (e) => {
-  if (e.target.name === 'delivery') renderSummary();
   if (e.target.name === 'consent') e.target.closest('.consent').classList.remove('invalid');
 });
 form.addEventListener('input', (e) => {
@@ -509,9 +568,9 @@ form.addEventListener('submit', submitOrder);
 window.catalogReady
   .then((catalog) => {
     CATALOG = catalog;
+    renderMode();
     renderCategories();
     renderProducts();
-    renderDelivery();
     updateCart();
     renderStructuredData();
     if (catalog.shop.demo) {

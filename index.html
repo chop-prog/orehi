@@ -3,18 +3,18 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Cosmo — орехи и сухофрукты с доставкой по России</title>
-  <meta name="description" content="Cosmo — орехи, сухофрукты и подарочные наборы с доставкой в пункты СДЭК по всей России. Фасовка от 100 г, свежий урожай, самовывоз в Москве.">
+  <title>Cosmo — орехи и сухофрукты в розницу и оптом</title>
+  <meta name="description" content="Cosmo — орехи, сухофрукты и подарочные наборы в розницу от 100 г и оптом от 500 кг. Цены за кг, свежий урожай, доставка по договорённости.">
   <meta name="theme-color" content="#0b0d18">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="ru_RU">
   <meta property="og:title" content="Cosmo — орехи и сухофрукты">
-  <meta property="og:description" content="Фасовка от 100 г, свежий урожай, доставка СДЭК по всей России.">
+  <meta property="og:description" content="Розница от 100 г и опт от 500 кг, свежий урожай.">
   <meta property="og:image" content="https://images.unsplash.com/photo-1710857397974-f0617001c39e?w=1200&h=630&fit=crop&q=80">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%230b0d18'/><circle cx='16' cy='16' r='7' fill='%23f08a24'/><ellipse cx='16' cy='16' rx='13' ry='4' fill='none' stroke='%23f4efe6' stroke-width='1.6' transform='rotate(-20 16 16)'/></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Onest:wght@400;500;600;700&family=Russo+One&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=16">
+  <link rel="stylesheet" href="style.css?v=17">
 </head>
 <body>
   <a class="skip-link" href="#catalog">Перейти к каталогу</a>
@@ -22,19 +22,18 @@
   <header class="header">
     <div class="container header__inner">
       <a href="#" class="logo" aria-label="Cosmo — на главную">
-        <!-- Планета с орбитой; по орбите летает мини-ракета -->
+        <!-- Планета с орбитой; на орбите стоит мини-ракета -->
         <svg viewBox="0 0 32 32" aria-hidden="true" overflow="visible">
           <ellipse cx="16" cy="16" rx="14" ry="4.5" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".55" transform="rotate(-20 16 16)"/>
           <circle cx="16" cy="16" r="7" fill="currentColor"/>
           <g transform="rotate(-20 16 16)">
-            <g class="logo-rocket">
+            <g class="logo-rocket" transform="translate(28.3 18.2) rotate(-30)">
               <g transform="scale(1.5)">
               <path d="M-1.4,-1.2 L-3.8,-2.9 L-3.1,-0.9Z M-1.4,1.2 L-3.8,2.9 L-3.1,0.9Z" fill="#1b3d9a"/>
               <path d="M3.6,0 Q2,-1.6 -1.2,-1.45 L-3.1,-1.2 Q-3.6,0 -3.1,1.2 L-1.2,1.45 Q2,1.6 3.6,0Z" fill="#3d84f5"/>
               <path d="M3.6,0 Q2.8,-0.9 2.2,-1.15 L2.2,1.15 Q2.8,0.9 3.6,0Z" fill="#eef5ff"/>
               <circle cx="0.5" cy="0" r="0.6" fill="#d8f0ff"/>
               </g>
-              <animateMotion dur="3.4s" repeatCount="indefinite" rotate="auto" path="M30,16 A14,4.5 0 1,1 2,16 A14,4.5 0 1,1 30,16"/>
             </g>
           </g>
         </svg>
@@ -44,7 +43,7 @@
         <a href="#catalog">Каталог</a>
         <a href="#how">Как мы работаем</a>
         <a href="#gifts">Подарки и опт</a>
-        <a href="#delivery">Доставка</a>
+        <a href="#delivery">Доставка и опт</a>
         <a href="#faq">Вопросы</a>
       </nav>
       <a class="header__tg" data-shop-href="bot" target="_blank" rel="noopener" aria-label="Заказать в Telegram">
@@ -67,7 +66,7 @@
       </h1>
       <p class="hero__outline" aria-hidden="true">Вкус на другой орбите</p>
       <div class="hero__bottom">
-        <p class="hero__lead">Орехи и сухофрукты от проверенных поставщиков из Узбекистана, Ирана и Турции. Фасуем от 100 г в день отправки и везём в пункты СДЭК по всей России.</p>
+        <p class="hero__lead">Орехи и сухофрукты от проверенных поставщиков из Узбекистана, Ирана и Турции. В розницу — от 100 г, оптом — от 500 кг каждой позиции по цене за килограмм.</p>
         <div class="hero__actions">
           <a href="#catalog" class="btn btn--accent">Выбрать в каталоге</a>
           <a class="btn btn--line" data-shop-href="bot" target="_blank" rel="noopener">Заказать в Telegram</a>
@@ -127,6 +126,12 @@
             </select>
           </div>
         </div>
+        <!-- Два каталога: розница (фасовка) и опт (цена за кг, от 500 кг каждой позиции) -->
+        <div class="modes" role="tablist" aria-label="Каталог">
+          <button class="mode active" data-mode="retail" role="tab" aria-selected="true">Розница</button>
+          <button class="mode" data-mode="opt" role="tab" aria-selected="false">Опт · от 500 кг</button>
+        </div>
+        <p class="mode-note" id="modeNote"></p>
         <div class="chips" id="categories"></div>
         <div class="grid" id="products">
           <p class="empty">Загружаем каталог…</p>
@@ -146,7 +151,7 @@
         <ol class="steps">
           <li><b>Отбор партии</b><span>Пробуем образцы нового урожая и берём только то, что едим сами. На каждую партию есть декларация соответствия ТР ТС.</span></li>
           <li><b>Фасовка в день отправки</b><span>Взвешиваем от 100 г, упаковываем в пакеты с zip-замком. На этикетке: состав, вес, дата фасовки и срок годности.</span></li>
-          <li><b>Доставка СДЭК</b><span>Отправляем в течение рабочего дня после оплаты. Через 2–5 дней заказ в пункте выдачи рядом с вами.</span></li>
+          <li><b>Доставка по договорённости</b><span>После заказа менеджер связывается с вами и предлагает способ, сроки и стоимость доставки — для розницы и для опта.</span></li>
         </ol>
       </div>
     </section>
@@ -156,7 +161,7 @@
       <div class="container stats">
         <div><b>15</b><span>видов орехов и сухофруктов</span></div>
         <div><b>100 г</b><span>минимальная фасовка</span></div>
-        <div><b>2–5</b><span>дней доставки по России</span></div>
+        <div><b>500 кг</b><span>минимальный опт каждой позиции</span></div>
         <div><b>500 ₽</b><span>минимальный заказ</span></div>
       </div>
     </section>
@@ -181,12 +186,23 @@
 
     <section class="section section--cosmos section--tight" id="delivery">
       <div class="container">
-        <p class="eyebrow">Доставка и оплата</p>
+        <p class="eyebrow">Доставка и опт</p>
         <h2 class="h-display">Как получить заказ</h2>
-        <div class="delivery" id="deliveryCards"></div>
+        <div class="delivery">
+          <div class="delivery__card">
+            <h3>Розница</h3>
+            <p>Фасовка от 100 г, минимальный заказ 500 ₽. Оформите заказ на сайте или в Telegram-боте.</p>
+            <b>Цена за упаковку</b>
+          </div>
+          <div class="delivery__card">
+            <h3>Опт</h3>
+            <p>От 500 кг каждой позиции. Выберите вкладку «Опт» в каталоге и укажите нужное количество в килограммах.</p>
+            <b>Цена за килограмм</b>
+          </div>
+        </div>
         <div class="pay">
-          <h3>Оплата</h3>
-          <p>После оформления менеджер звонит или пишет, чтобы подтвердить заказ, и присылает ссылку на оплату картой или по СБП. Отправляем в течение рабочего дня после оплаты, трек-номер СДЭК приходит в SMS. При самовывозе можно оплатить на месте картой или наличными.</p>
+          <h3>Доставка и оплата — по договорённости</h3>
+          <p>Стоимость доставки не входит в заказ. После оформления менеджер звонит или пишет вам, подтверждает состав, предлагает способ, сроки и стоимость доставки, а затем присылает ссылку на оплату картой или по СБП. Для опта — счёт и документы для юрлиц.</p>
         </div>
       </div>
     </section>
@@ -198,8 +214,8 @@
         <details class="faq"><summary>Как хранить орехи и сухофрукты?</summary><p>Храните в закрытом пакете или стеклянной банке в сухом прохладном месте, при температуре не выше +20 °C. Очищенные орехи летом лучше держать в холодильнике: так они дольше не горчат.</p></details>
         <details class="faq"><summary>Можно ли изменить заказ после оформления?</summary><p>Да. Скажите об этом менеджеру, когда он позвонит для подтверждения, или напишите нам в Telegram до отправки заказа.</p></details>
         <details class="faq"><summary>Почему вес в заказе может немного отличаться?</summary><p>Мы фасуем вручную, поэтому возможна погрешность ±3%. Если вес окажется меньше, разницу пересчитаем в вашу пользу.</p></details>
-        <details class="faq"><summary>Есть ли минимальная сумма заказа?</summary><p>Минимальный заказ — 500 ₽. Доставка в пункт выдачи СДЭК стоит 290 ₽ по всей России, самовывоз бесплатный.</p></details>
-        <details class="faq"><summary>Как отследить посылку?</summary><p>После отправки СДЭК присылает SMS с трек-номером. По нему можно следить за посылкой на сайте или в приложении СДЭК. Когда заказ придёт в пункт выдачи, вы получите ещё одно уведомление.</p></details>
+        <details class="faq"><summary>Есть ли минимальная сумма заказа?</summary><p>В рознице минимальный заказ — 500 ₽. Опт — от 500 кг каждой позиции, цена указана за килограмм.</p></details>
+        <details class="faq"><summary>Сколько стоит доставка?</summary><p>Доставка в стоимость заказа не входит. После заказа менеджер свяжется с вами, предложит удобный способ и назовёт стоимость. Для оптовых партий подбираем транспортную компанию под объём.</p></details>
         <details class="faq"><summary>Не испортятся ли продукты в дороге?</summary><p>Орехи и сухофрукты спокойно переносят доставку до двух недель. Мы упаковываем их в плотные пакеты с zip-замком и картонную коробку, чтобы ничего не помялось.</p></details>
         <details class="faq"><summary>Что делать, если товар не понравился?</summary><p>Напишите нам в течение 14 дней и приложите фото. Мы заменим товар или вернём деньги.</p></details>
       </div>
@@ -267,15 +283,8 @@
       <h2 id="coTitle">Оформление заказа</h2>
       <label class="field">Имя<input class="input" name="name" autocomplete="name" maxlength="80" placeholder="Как к вам обращаться"></label>
       <label class="field">Телефон<input class="input" name="phone" type="tel" autocomplete="tel" placeholder="+7 (___) ___-__-__"></label>
-      <fieldset class="field">
-        <legend>Способ получения</legend>
-        <div id="deliveryOptions"></div>
-      </fieldset>
-      <div class="field" id="addressField">
-        <label for="address" id="addressLabel">Адрес</label>
-        <input class="input" id="address" name="address" autocomplete="street-address" maxlength="300">
-        <a class="field__link" id="addressMap" target="_blank" rel="noopener">Найти пункт на карте СДЭК ↗</a>
-      </div>
+      <label class="field">Город <span class="field__opt">— по желанию</span><input class="input" id="address" name="address" autocomplete="address-level2" maxlength="300" placeholder="Например, Казань"></label>
+      <p class="field__note">Доставку менеджер согласует с вами после заказа: способ, сроки и стоимость.</p>
       <label class="field">Комментарий<textarea class="input" name="comment" rows="2" maxlength="500" placeholder="Удобное время, текст открытки и т. п."></textarea></label>
       <div class="summary" id="summary"></div>
       <label class="consent"><input type="checkbox" name="consent"> <span>Я согласен(на) с <a href="offer.html" target="_blank">офертой</a> и на обработку персональных данных согласно <a href="privacy.html" target="_blank">политике конфиденциальности</a></span></label>
@@ -292,8 +301,8 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="shop.js?v=16"></script>
-  <script src="app.js?v=16"></script>
-  <script src="effects.js?v=16"></script>
+  <script src="shop.js?v=17"></script>
+  <script src="app.js?v=17"></script>
+  <script src="effects.js?v=17"></script>
 </body>
 </html>
