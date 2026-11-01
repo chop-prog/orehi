@@ -440,6 +440,14 @@ document.addEventListener('click', (e) => {
   }
   const add = e.target.closest('[data-add]');
   if (add) { addToCart(+add.dataset.add); return; }
+  const world = e.target.closest('[data-goto-cat]');
+  if (world) {
+    state.cat = world.dataset.gotoCat;
+    renderCategories();
+    renderProducts();
+    $('#catalog').scrollIntoView();
+    return;
+  }
   const open = e.target.closest('[data-open]');
   if (open) { openProduct(+open.dataset.open); return; }
   const close = e.target.closest('[data-close]');
