@@ -368,23 +368,36 @@
     return c;
   }
 
-  // Плоская мультяшная ракета: белый корпус, красные нос и стабилизаторы, синий иллюминатор;
-  // огня нет — из сопла сыплются орешки. Нарисована носом вправо; L — длина
-  function drawRocket(c, L) {
-    // Стабилизаторы
-    c.fillStyle = '#e8473c';
-    [-1, 1].forEach((s) => {
+  // Объёмная мультяшная ракета: белый корпус, красные нос и три стабилизатора, синий иллюминатор;
+  // огня нет — из сопла сыплются орешки. Нарисована носом вправо; L — длина.
+  // roll — поворот вокруг своей оси (стабилизаторы и иллюминатор «обходят» корпус),
+  // fore — ракурс: 1 — видна сбоку, меньше — повёрнута к нам и укорачивается (не меньше 0,7, чтобы ракету всегда было видно целиком)
+  function drawRocket(c, L, roll = 0, fore = 1) {
+    const fins = [0, 1, 2].map((k) => {
+      const ang = roll + (k * Math.PI * 2) / 3;
+      return { y: Math.cos(ang), z: Math.sin(ang) }; // z > 0 — стабилизатор с нашей стороны
+    });
+    const fin = (f) => {
+      c.fillStyle = f.z > 0 ? '#e8473c' : '#a92c25';
       c.beginPath();
-      c.moveTo(-0.08 * L, 0.16 * L * s);
-      c.quadraticCurveTo(-0.3 * L, 0.24 * L * s, -0.44 * L, 0.36 * L * s);
-      c.lineTo(-0.38 * L, 0.12 * L * s);
+      c.moveTo(-0.06 * L, 0.15 * L * f.y);
+      c.quadraticCurveTo(-0.3 * L, 0.27 * L * f.y, -0.45 * L, 0.4 * L * f.y);
+      c.lineTo(-0.38 * L, 0.11 * L * f.y);
       c.closePath();
       c.fill();
-    });
+    };
+    c.save();
+    c.scale(0.7 + 0.3 * fore, 1);
+    fins.filter((f) => f.z <= 0).forEach(fin);
     // Сопло
-    c.fillStyle = '#8a92a3';
-    c.fillRect(-0.48 * L, -0.08 * L, 0.09 * L, 0.16 * L);
-    // Корпус
+    const noz = c.createLinearGradient(0, -0.1 * L, 0, 0.1 * L);
+    noz.addColorStop(0, '#c3c9d4');
+    noz.addColorStop(1, '#5d6474');
+    c.fillStyle = noz;
+    c.beginPath();
+    c.moveTo(-0.4 * L, -0.08 * L); c.lineTo(-0.49 * L, -0.11 * L); c.lineTo(-0.49 * L, 0.11 * L); c.lineTo(-0.4 * L, 0.08 * L);
+    c.closePath(); c.fill();
+    // Корпус: свет сверху, тень снизу — выглядит как цилиндр
     const hull = () => {
       c.beginPath();
       c.moveTo(0.56 * L, 0);
@@ -393,29 +406,46 @@
       c.bezierCurveTo(0, 0.22 * L, 0.4 * L, 0.24 * L, 0.56 * L, 0);
       c.closePath();
     };
+    const body = c.createLinearGradient(0, -0.22 * L, 0, 0.22 * L);
+    body.addColorStop(0, '#d9dee8');
+    body.addColorStop(0.22, '#ffffff');
+    body.addColorStop(0.6, '#e4e8ef');
+    body.addColorStop(1, '#8d95a5');
     hull();
-    c.fillStyle = '#f4f6fa';
+    c.fillStyle = body;
     c.fill();
-    // Красный нос
     c.save();
     hull();
     c.clip();
-    c.fillStyle = '#e8473c';
+    // Красный нос с тем же объёмом
+    const nose = c.createLinearGradient(0, -0.22 * L, 0, 0.22 * L);
+    nose.addColorStop(0, '#ff8a7c');
+    nose.addColorStop(0.3, '#ef5446');
+    nose.addColorStop(1, '#9c241c');
+    c.fillStyle = nose;
     c.fillRect(0.3 * L, -0.3 * L, 0.3 * L, 0.6 * L);
+    // Красная полоса у хвоста
+    c.fillRect(-0.36 * L, -0.3 * L, 0.06 * L, 0.6 * L);
+    // Иллюминатор обходит корпус при вращении: сбоку он сжимается, сзади не виден
+    const wa = roll + Math.PI / 2;
+    const wz = Math.sin(wa), wy = Math.cos(wa) * 0.13 * L;
+    if (wz > 0.05) {
+      c.fillStyle = '#c9d1dd';
+      c.beginPath(); c.ellipse(0.1 * L, wy, 0.085 * L, 0.085 * L * wz, 0, 0, Math.PI * 2); c.fill();
+      const glass = c.createRadialGradient(0.08 * L, wy - 0.02 * L * wz, 0, 0.1 * L, wy, 0.062 * L);
+      glass.addColorStop(0, '#9fd2ff');
+      glass.addColorStop(1, '#1f5fd1');
+      c.fillStyle = glass;
+      c.beginPath(); c.ellipse(0.1 * L, wy, 0.062 * L, 0.062 * L * wz, 0, 0, Math.PI * 2); c.fill();
+      c.fillStyle = `rgba(255, 255, 255, ${0.85 * wz})`;
+      c.beginPath(); c.ellipse(0.085 * L, wy - 0.02 * L * wz, 0.018 * L, 0.018 * L * wz, 0, 0, Math.PI * 2); c.fill();
+    }
+    // Блик вдоль корпуса
+    c.fillStyle = 'rgba(255, 255, 255, .55)';
+    c.beginPath(); c.ellipse(0.02 * L, -0.12 * L, 0.3 * L, 0.025 * L, -0.04, 0, Math.PI * 2); c.fill();
     c.restore();
-    // Иллюминатор
-    c.beginPath();
-    c.arc(0.1 * L, 0, 0.085 * L, 0, Math.PI * 2);
-    c.fillStyle = '#c9d1dd';
-    c.fill();
-    c.beginPath();
-    c.arc(0.1 * L, 0, 0.062 * L, 0, Math.PI * 2);
-    c.fillStyle = '#2f74e0';
-    c.fill();
-    c.beginPath();
-    c.arc(0.085 * L, -0.02 * L, 0.018 * L, 0, Math.PI * 2);
-    c.fillStyle = 'rgba(255, 255, 255, .85)';
-    c.fill();
+    fins.filter((f) => f.z > 0).forEach(fin);
+    c.restore();
   }
 
   const RING = { tilt: -0.3, flat: 0.24 }; // flat — во сколько раз кольцо ниже, чем шире
@@ -464,7 +494,7 @@
         ctx.save();
         ctx.translate(pos.x, pos.y);
         ctx.rotate(Math.atan2(dir.y, dir.x));
-        drawRocket(ctx, L);
+        drawRocket(ctx, L, rot * 2, len / ORBIT.rx); // медленно поворачивается вокруг своей оси
         ctx.restore();
       }
       ctx.restore();
@@ -627,7 +657,7 @@
           ctx.save();
           ctx.translate(rocket.x, rocket.y);
           ctx.rotate(Math.atan2(rocket.vy, rocket.vx));
-          drawRocket(ctx, rocket.L);
+          drawRocket(ctx, rocket.L, frame * 0.02);
           ctx.restore();
         }
       };
