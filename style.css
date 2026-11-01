@@ -2,8 +2,8 @@
    цвет кураги — единственный яркий акцент. Буквы «О» в названии — живые планеты. */
 :root {
   color-scheme: dark; /* системные элементы (список сортировки, галочки, прокрутка) тоже тёмные */
-  --space: #0b0d18;
-  --space-2: #161a2c;
+  --space: #020204;
+  --space-2: #0a0a10;
   --cream: #f4efe6;      /* светлый текст на тёмном */
   --cream-2: #1d2440;    /* второстепенная тёмная поверхность */
   --paper: #141a30;      /* карточки, поля, окна */
@@ -72,7 +72,7 @@ h1, h2, h3 { text-wrap: balance; }
 @keyframes twinkle { to { opacity: .45; } }
 
 /* Шапка */
-.header { position: sticky; top: 0; z-index: 20; background: rgba(11, 13, 24, .88); backdrop-filter: blur(12px); color: var(--cream); border-bottom: 1px solid var(--line-on-space); }
+.header { position: sticky; top: 0; z-index: 20; background: rgba(2, 2, 4, .9); backdrop-filter: blur(12px); color: var(--cream); border-bottom: 1px solid var(--line-on-space); }
 .header__inner { display: flex; align-items: center; gap: 28px; height: 70px; }
 .logo { display: flex; align-items: center; gap: 10px; font-family: var(--display); font-weight: 900; font-size: 22px; letter-spacing: -.02em; text-decoration: none; text-transform: uppercase; }
 .logo svg { width: 40px; height: 40px; color: var(--accent); overflow: visible; }
@@ -90,7 +90,7 @@ h1, h2, h3 { text-wrap: balance; }
 @keyframes bump { 50% { transform: scale(1.08); } }
 
 /* Первый экран */
-.hero { position: relative; overflow: hidden; background: radial-gradient(ellipse 70% 60% at 50% 45%, #1d2140 0%, var(--space) 70%); color: var(--cream); padding-block: 56px 64px; }
+.hero { position: relative; overflow: hidden; background: radial-gradient(ellipse 70% 60% at 50% 45%, #0d0f1f 0%, var(--space) 70%); color: var(--cream); padding-block: 56px 64px; }
 .hero__inner { position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; }
 .hero__kicker { font-family: var(--display); font-size: 12px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--accent); }
 .hero__word { font-family: var(--display); font-weight: 900; font-size: clamp(56px, 19vw, 280px); line-height: .9; letter-spacing: -.05em; display: flex; align-items: center; justify-content: center; margin: 18px 0 6px; }
@@ -132,7 +132,7 @@ h1, h2, h3 { text-wrap: balance; }
 .tools #sort { width: 190px; }
 
 /* Тёмные зоны за разделами, каталогом, подарками, доставкой и вопросами */
-.cosmos-zone { position: relative; background: #070915; overflow: hidden; }
+.cosmos-zone { position: relative; background: var(--space); overflow: hidden; }
 .section--cosmos { background: transparent; color: var(--cream); }
 .section--cosmos > .container { position: relative; z-index: 1; }
 .section--cosmos .eyebrow { color: var(--accent); }
@@ -407,6 +407,8 @@ html.fx .h-display.by-words.reveal { opacity: 1; transform: none; }
 .by-words.is-in .w > span { transform: none; }
 
 /* Живые планеты (canvas из effects.js) поверх запасного фото; кольцо выходит за пределы буквы */
+/* Ракета, которая иногда пролетает по тёмным блокам */
+.flyby { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
 .planet__canvas { position: absolute; left: 50%; top: 50%; translate: -50% -50%; pointer-events: none; }
 .planet--live { z-index: 2; }
 .planet--live img, .planet--live .orbit, .planet--live::after { opacity: 0; }

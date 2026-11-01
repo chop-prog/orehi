@@ -545,6 +545,74 @@
     });
   }
 
+  /* ---------- Ракета пролетает по тёмным блокам, из сопла сыплются орешки ---------- */
+  if (!reduced) {
+    document.querySelectorAll('.hero, .stats-band, #contacts').forEach((zone) => {
+      const canvas = document.createElement('canvas');
+      canvas.className = 'flyby';
+      canvas.setAttribute('aria-hidden', 'true');
+      zone.prepend(canvas);
+      const ctx = canvas.getContext('2d');
+      let w = 0, h = 0, visible = false, rocket = null, trail = [], frame = 0;
+      let next = performance.now() + rand(1000, 3000);
+      const size = () => {
+        w = zone.offsetWidth; h = zone.offsetHeight;
+        canvas.width = w * dpr; canvas.height = h * dpr;
+      };
+      size();
+      addEventListener('resize', size);
+      new IntersectionObserver(([e]) => { visible = e.isIntersecting; }).observe(zone);
+
+      const launch = () => {
+        size(); // высота блока могла измениться после загрузки шрифтов
+        const dir = Math.random() < 0.5 ? 1 : -1;
+        const vx = dir * rand(2.2, 3.2);
+        const y0 = rand(0.15, 0.85) * h, y1 = rand(0.15, 0.85) * h;
+        rocket = { x: dir > 0 ? -80 : w + 80, y: y0, vx, vy: (y1 - y0) / ((w + 160) / Math.abs(vx)), L: rand(36, 50) };
+      };
+
+      const loop = (now) => {
+        requestAnimationFrame(loop);
+        if (!visible || document.hidden) return;
+        if (!rocket && !trail.length && now > next) launch();
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.clearRect(0, 0, w, h);
+        if (rocket) {
+          rocket.x += rocket.vx; rocket.y += rocket.vy;
+          const a = Math.atan2(rocket.vy, rocket.vx);
+          if (++frame % 8 === 0) {
+            trail.push({
+              x: rocket.x - Math.cos(a) * rocket.L * 0.55, y: rocket.y - Math.sin(a) * rocket.L * 0.55,
+              vx: -Math.cos(a) * 0.6 + rand(-0.3, 0.3), vy: -Math.sin(a) * 0.6 + rand(-0.3, 0.3),
+              rot: rand(0, 6), vr: rand(-0.04, 0.04), size: rocket.L * rand(0.55, 0.7), life: 1, kind: pick(KINDS),
+            });
+          }
+          if (rocket.x < -100 || rocket.x > w + 100) { rocket = null; next = now + rand(6000, 12000); }
+        }
+        trail.forEach((t) => { t.x += t.vx; t.y += t.vy; t.rot += t.vr; t.life -= 0.012; });
+        trail = trail.filter((t) => t.life > 0);
+        trail.forEach((t) => {
+          ctx.save();
+          ctx.globalAlpha = t.life;
+          ctx.translate(t.x, t.y);
+          ctx.rotate(t.rot);
+          ctx.drawImage(sprites[t.kind], -t.size / 2, -t.size / 2, t.size, t.size);
+          ctx.restore();
+        });
+        if (rocket) {
+          ctx.save();
+          ctx.translate(rocket.x, rocket.y);
+          ctx.rotate(Math.atan2(rocket.vy, rocket.vx));
+          ctx.shadowColor = 'rgba(80, 160, 255, .6)';
+          ctx.shadowBlur = 14;
+          drawRocket(ctx, rocket.L);
+          ctx.restore();
+        }
+      };
+      requestAnimationFrame(loop);
+    });
+  }
+
   /* ---------- Парящие орехи на первом экране ---------- */
   const hero = document.querySelector('.hero');
   if (hero) {
