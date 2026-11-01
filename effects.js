@@ -171,7 +171,7 @@
         vy: burst ? rand(-4.5, -2) : rand(-1, -0.2),
         rot: rand(0, Math.PI * 2),
         vr: rand(-0.06, 0.06),
-        size: burst ? rand(24, 34) : rand(20, 26),
+        size: burst ? rand(32, 44) : rand(28, 36),
         kind: pick(KINDS),
         life: 1,
         age: 0,
@@ -435,7 +435,7 @@
     const { ctx, R } = p;
     const rot = p.rot;
     // Миндалина-спутник на наклонной орбите: за планетой меньше и бледнее, перед ней — крупнее
-    const ma = rot * 2.2;
+    const ma = rot * 1.4;
     const ORB = { rx: R * 1.62, ry: R * 0.44, tilt: 0.28 };
     const moonFront = Math.sin(ma) > 0;
     const drawMoon = () => {
@@ -450,7 +450,7 @@
       ctx.shadowColor = 'rgba(0, 0, 0, .35)';
       ctx.shadowBlur = R * 0.12;
       ctx.shadowOffsetY = R * 0.04;
-      drawAlmond(ctx, R * 0.2 * depth, R * 0.32 * depth, rot * 3);
+      drawAlmond(ctx, R * 0.2 * depth, R * 0.32 * depth, rot * 2);
       ctx.restore();
     };
     ctx.save();

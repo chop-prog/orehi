@@ -106,9 +106,9 @@ h1, h2, h3 { text-wrap: balance; }
 .planet--b { animation: drift 8s ease-in-out -4s infinite; }
 @keyframes drift { 50% { transform: translateY(-.04em) rotate(4deg); } }
 .hero__outline { font-family: "Russo One", var(--display); font-weight: 400; letter-spacing: .02em; text-transform: uppercase; font-size: clamp(22px, 5.4vw, 72px); line-height: 1; letter-spacing: -.01em; color: transparent; -webkit-text-stroke: 1.5px rgba(244, 239, 230, .85); }
-.hero__bottom { display: grid; grid-template-columns: 1.2fr 1fr; gap: 40px; align-items: end; width: 100%; margin-top: 56px; text-align: left; }
+.hero__bottom { display: flex; justify-content: center; width: 100%; margin-top: 48px; }
 .hero__lead { color: var(--muted-on-space); font-size: 17px; max-width: 520px; }
-.hero__actions { display: flex; flex-wrap: wrap; gap: 12px; justify-content: flex-end; }
+.hero__actions { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
 
 /* Бегущая строка */
 .ticker { background: var(--accent); color: var(--accent-ink); overflow: hidden; border-block: 1px solid var(--accent-deep); }
@@ -148,7 +148,7 @@ h1, h2, h3 { text-wrap: balance; }
 
 /* Светлая зона: разделы и каталог на белом фоне, остальной сайт тёмный.
    Переопределяем токены — компоненты внутри сами берут светлые цвета */
-.cosmos-zone.zone-light {
+.zone-light {
   color-scheme: light;
   --space: #ffffff; --space-2: #faf6ef; --paper: #ffffff;
   --cream: #1d1b26; --cream-2: #f4efe6; --ink: #1d1b26;
