@@ -14,7 +14,8 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%230b0d18'/><circle cx='16' cy='16' r='7' fill='%23f08a24'/><ellipse cx='16' cy='16' rx='13' ry='4' fill='none' stroke='%23f4efe6' stroke-width='1.6' transform='rotate(-20 16 16)'/></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Onest:wght@400;500;600;700&family=Russo+One&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=29">
+  <script>try{if(localStorage.getItem("cosmo-theme")==="day")document.documentElement.dataset.theme="day"}catch(e){}</script>
+  <link rel="stylesheet" href="style.css?v=30">
 </head>
 <body>
   <a class="skip-link" href="#catalog">Перейти к каталогу</a>
@@ -46,7 +47,10 @@
         <a href="#delivery">Доставка и опт</a>
         <a href="#faq">Вопросы</a>
       </nav>
-      <a class="header__tg" data-shop-href="bot" target="_blank" rel="noopener" aria-label="Заказать в Telegram">
+      <div class="theme-switch" role="group" aria-label="Тема сайта">
+        <button type="button" data-theme-set="night" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="currentColor"/></svg><span>Ночь</span></button>
+        <button type="button" data-theme-set="day" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>День</span></button>
+      </div>      <a class="header__tg" data-shop-href="bot" target="_blank" rel="noopener" aria-label="Заказать в Telegram">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 4.3 2.9 11.5c-1.3.5-1.3 1.2-.2 1.6l4.8 1.5 1.8 5.6c.2.6.4.8.8.8.4 0 .6-.2.8-.4l2.4-2.3 4.9 3.6c.9.5 1.5.2 1.8-.8l3.2-15.1c.3-1.3-.5-1.9-1.7-1.3zM9.3 14.4l9.3-5.9c.4-.3.8-.1.5.2l-7.9 7.2-.3 3.3z" fill="currentColor"/></svg>
       </a>
       <button class="cart-btn" id="cartOpen" aria-label="Открыть корзину">
@@ -299,8 +303,8 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="shop.js?v=29"></script>
-  <script src="app.js?v=29"></script>
-  <script src="effects.js?v=29"></script>
+  <script src="shop.js?v=30"></script>
+  <script src="app.js?v=30"></script>
+  <script src="effects.js?v=30"></script>
 </body>
 </html>

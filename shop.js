@@ -20,6 +20,19 @@ window.catalogReady = fetch('catalog.json')
     return catalog;
   });
 
+// Переключатель «Ночь / День». Тема ставится ещё в <head>, здесь — только кнопки
+document.querySelectorAll('[data-theme-set]').forEach((btn) => {
+  const sync = () => btn.setAttribute('aria-pressed', String((document.documentElement.dataset.theme || 'night') === btn.dataset.themeSet));
+  sync();
+  btn.addEventListener('click', () => {
+    const theme = btn.dataset.themeSet;
+    document.documentElement.dataset.theme = theme;
+    try { localStorage.setItem('cosmo-theme', theme); } catch (e) { /* приватный режим — тема просто не запомнится */ }
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'day' ? '#ffffff' : '#020204');
+    document.querySelectorAll('[data-theme-set]').forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+  });
+});
+
 // Яндекс Метрика подключается, только если в catalog.json указан shop.metrikaId
 function loadMetrika(id) {
   (function (m, e, t, r, i, k, a) {
