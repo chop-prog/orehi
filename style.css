@@ -93,7 +93,7 @@ h1, h2, h3 { text-wrap: balance; }
 .hero { position: relative; overflow: hidden; background: radial-gradient(ellipse 70% 60% at 50% 45%, #0c0c10 0%, var(--space) 70%); color: var(--cream); padding-block: 56px 64px; }
 .hero__inner { position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; }
 .hero__kicker { font-family: var(--display); font-size: 12px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--accent); }
-.hero__word { font-family: var(--display); font-weight: 900; font-size: clamp(56px, 19vw, 280px); line-height: .9; letter-spacing: -.05em; display: flex; align-items: center; justify-content: center; margin: 18px 0 6px; }
+.hero__word { font-family: var(--display); font-weight: 900; font-size: clamp(56px, 23vw, 300px); line-height: .9; letter-spacing: -.05em; display: flex; align-items: center; justify-content: center; margin: 18px 0 6px; }
 .planet { position: relative; display: inline-block; width: .78em; height: .78em; margin: 0 .03em; }
 .planet img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; box-shadow: inset -.08em -.08em .2em rgba(0, 0, 0, .5), 0 0 .3em rgba(240, 138, 36, .35); }
 .planet::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, .28), transparent 45%), radial-gradient(circle at 70% 75%, rgba(0, 0, 0, .45), transparent 60%); }
@@ -105,7 +105,7 @@ h1, h2, h3 { text-wrap: balance; }
 .planet--a { animation: drift 8s ease-in-out infinite; }
 .planet--b { animation: drift 8s ease-in-out -4s infinite; }
 @keyframes drift { 50% { transform: translateY(-.04em) rotate(4deg); } }
-.hero__outline { font-family: "Russo One", var(--display); font-weight: 400; letter-spacing: .02em; text-transform: uppercase; font-size: clamp(22px, 5.4vw, 72px); line-height: 1; letter-spacing: -.01em; color: transparent; -webkit-text-stroke: 1.5px rgba(244, 239, 230, .85); }
+.hero__outline { font-family: "Russo One", var(--display); font-weight: 400; letter-spacing: .02em; text-transform: uppercase; font-size: clamp(26px, 6.6vw, 92px); line-height: 1; letter-spacing: -.01em; color: transparent; -webkit-text-stroke: 1.5px rgba(244, 239, 230, .85); }
 .hero__bottom { display: flex; justify-content: center; width: 100%; margin-top: 48px; }
 .hero__lead { color: var(--muted-on-space); font-size: 17px; max-width: 520px; }
 .hero__actions { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
@@ -583,3 +583,12 @@ html.fx .h-display.by-words.reveal { opacity: 1; transform: none; }
 .grumpy__bubble b { display: block; font-family: var(--display); font-size: 12px; text-transform: uppercase; letter-spacing: .03em; color: #d8700c; margin-bottom: 2px; }
 body:has(.mobile-cart:not([hidden])) .grumpy { bottom: 84px; }
 @media (max-width: 520px) { .grumpy svg { width: 72px; height: 72px; } .grumpy__bubble { max-width: 190px; margin-bottom: 40px; font-size: 12.5px; } }
+.grumpy.is-cool .gn-grumpy, .grumpy:not(.is-cool) .gn-cool { display: none; }
+@media (max-width: 600px) { .hero__word { font-size: 20.5vw; } }
+@media (max-width: 520px) { .logo { font-size: 16px; gap: 8px; } .logo svg { width: 32px; height: 32px; } .header__tg { width: 36px; height: 36px; } .cart-btn { padding: 10px 12px; font-size: 11px; } }
+@media (max-width: 400px) { .header__tg { display: none; } }
+
+/* Карточки товаров выплывают при прокрутке, как остальные блоки; выезд — через translate, наклон и подъём при наведении — через transform */
+html.fx .card.reveal-card { opacity: 0; translate: 0 36px; transition: opacity .7s ease calc(var(--i, 0) * 90ms), translate .8s cubic-bezier(.2, .7, .2, 1) calc(var(--i, 0) * 90ms), transform .35s cubic-bezier(.2, .7, .2, 1), box-shadow .35s; }
+html.fx .card.reveal-card.is-in { opacity: 1; translate: 0 0; }
+html.fx .card.reveal-card.is-in:hover { transition: opacity .7s, translate .8s, transform .12s ease-out, box-shadow .35s; }

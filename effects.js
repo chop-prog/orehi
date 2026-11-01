@@ -368,36 +368,23 @@
     return c;
   }
 
-  // Объёмная мультяшная ракета: белый корпус, красные нос и три стабилизатора, синий иллюминатор;
-  // огня нет — из сопла сыплются орешки. Нарисована носом вправо; L — длина.
-  // roll — поворот вокруг своей оси (стабилизаторы и иллюминатор «обходят» корпус),
-  // fore — ракурс: 1 — видна сбоку, меньше — повёрнута к нам и укорачивается (не меньше 0,7, чтобы ракету всегда было видно целиком)
-  function drawRocket3D(c, L, roll = 0, fore = 1) {
-    const fins = [0, 1, 2].map((k) => {
-      const ang = roll + (k * Math.PI * 2) / 3;
-      return { y: Math.cos(ang), z: Math.sin(ang) }; // z > 0 — стабилизатор с нашей стороны
-    });
-    const fin = (f) => {
-      c.fillStyle = f.z > 0 ? '#e8473c' : '#a92c25';
+  // Плоская мультяшная ракета: белый корпус, красные нос и стабилизаторы, синий иллюминатор;
+  // огня нет — из сопла сыплются орешки. Нарисована носом вправо; L — длина
+  function drawRocket(c, L) {
+    // Стабилизаторы
+    c.fillStyle = '#e8473c';
+    [-1, 1].forEach((s) => {
       c.beginPath();
-      c.moveTo(-0.06 * L, 0.15 * L * f.y);
-      c.quadraticCurveTo(-0.3 * L, 0.27 * L * f.y, -0.45 * L, 0.4 * L * f.y);
-      c.lineTo(-0.38 * L, 0.11 * L * f.y);
+      c.moveTo(-0.08 * L, 0.16 * L * s);
+      c.quadraticCurveTo(-0.3 * L, 0.24 * L * s, -0.44 * L, 0.36 * L * s);
+      c.lineTo(-0.38 * L, 0.12 * L * s);
       c.closePath();
       c.fill();
-    };
-    c.save();
-    c.scale(0.7 + 0.3 * fore, 1);
-    fins.filter((f) => f.z <= 0).forEach(fin);
+    });
     // Сопло
-    const noz = c.createLinearGradient(0, -0.1 * L, 0, 0.1 * L);
-    noz.addColorStop(0, '#c3c9d4');
-    noz.addColorStop(1, '#5d6474');
-    c.fillStyle = noz;
-    c.beginPath();
-    c.moveTo(-0.4 * L, -0.08 * L); c.lineTo(-0.49 * L, -0.11 * L); c.lineTo(-0.49 * L, 0.11 * L); c.lineTo(-0.4 * L, 0.08 * L);
-    c.closePath(); c.fill();
-    // Корпус: свет сверху, тень снизу — выглядит как цилиндр
+    c.fillStyle = '#8a92a3';
+    c.fillRect(-0.48 * L, -0.08 * L, 0.09 * L, 0.16 * L);
+    // Корпус
     const hull = () => {
       c.beginPath();
       c.moveTo(0.56 * L, 0);
@@ -406,46 +393,29 @@
       c.bezierCurveTo(0, 0.22 * L, 0.4 * L, 0.24 * L, 0.56 * L, 0);
       c.closePath();
     };
-    const body = c.createLinearGradient(0, -0.22 * L, 0, 0.22 * L);
-    body.addColorStop(0, '#d9dee8');
-    body.addColorStop(0.22, '#ffffff');
-    body.addColorStop(0.6, '#e4e8ef');
-    body.addColorStop(1, '#8d95a5');
     hull();
-    c.fillStyle = body;
+    c.fillStyle = '#f4f6fa';
     c.fill();
+    // Красный нос
     c.save();
     hull();
     c.clip();
-    // Красный нос с тем же объёмом
-    const nose = c.createLinearGradient(0, -0.22 * L, 0, 0.22 * L);
-    nose.addColorStop(0, '#ff8a7c');
-    nose.addColorStop(0.3, '#ef5446');
-    nose.addColorStop(1, '#9c241c');
-    c.fillStyle = nose;
+    c.fillStyle = '#e8473c';
     c.fillRect(0.3 * L, -0.3 * L, 0.3 * L, 0.6 * L);
-    // Красная полоса у хвоста
-    c.fillRect(-0.36 * L, -0.3 * L, 0.06 * L, 0.6 * L);
-    // Иллюминатор обходит корпус при вращении: сбоку он сжимается, сзади не виден
-    const wa = roll + Math.PI / 2;
-    const wz = Math.sin(wa), wy = Math.cos(wa) * 0.13 * L;
-    if (wz > 0.05) {
-      c.fillStyle = '#c9d1dd';
-      c.beginPath(); c.ellipse(0.1 * L, wy, 0.085 * L, 0.085 * L * wz, 0, 0, Math.PI * 2); c.fill();
-      const glass = c.createRadialGradient(0.08 * L, wy - 0.02 * L * wz, 0, 0.1 * L, wy, 0.062 * L);
-      glass.addColorStop(0, '#9fd2ff');
-      glass.addColorStop(1, '#1f5fd1');
-      c.fillStyle = glass;
-      c.beginPath(); c.ellipse(0.1 * L, wy, 0.062 * L, 0.062 * L * wz, 0, 0, Math.PI * 2); c.fill();
-      c.fillStyle = `rgba(255, 255, 255, ${0.85 * wz})`;
-      c.beginPath(); c.ellipse(0.085 * L, wy - 0.02 * L * wz, 0.018 * L, 0.018 * L * wz, 0, 0, Math.PI * 2); c.fill();
-    }
-    // Блик вдоль корпуса
-    c.fillStyle = 'rgba(255, 255, 255, .55)';
-    c.beginPath(); c.ellipse(0.02 * L, -0.12 * L, 0.3 * L, 0.025 * L, -0.04, 0, Math.PI * 2); c.fill();
     c.restore();
-    fins.filter((f) => f.z > 0).forEach(fin);
-    c.restore();
+    // Иллюминатор
+    c.beginPath();
+    c.arc(0.1 * L, 0, 0.085 * L, 0, Math.PI * 2);
+    c.fillStyle = '#c9d1dd';
+    c.fill();
+    c.beginPath();
+    c.arc(0.1 * L, 0, 0.062 * L, 0, Math.PI * 2);
+    c.fillStyle = '#2f74e0';
+    c.fill();
+    c.beginPath();
+    c.arc(0.085 * L, -0.02 * L, 0.018 * L, 0, Math.PI * 2);
+    c.fillStyle = 'rgba(255, 255, 255, .85)';
+    c.fill();
   }
 
   const RING = { tilt: -0.3, flat: 0.24 }; // flat — во сколько раз кольцо ниже, чем шире
@@ -464,12 +434,13 @@
     const depth = 0.78 + 0.22 * Math.sin(a);
     const L = R * 0.85 * depth;
 
-    // Орешки из сопла: крупные и редкие, чтобы каждый было видно
-    if ((p.frame = (p.frame || 0) + 1) % 7 === 0) {
+    // Орешки из сопла: крупные и редкие, чтобы каждый было видно.
+    // Сыплются, только пока ракета перед планетой, — иначе видно, как они вылетают из-за неё
+    if ((p.frame = (p.frame || 0) + 1) % 7 === 0 && front) {
       p.trail.push({
         x: pos.x - dir.x * L * 0.55, y: pos.y - dir.y * L * 0.55,
-        vx: -dir.x * R * 0.016 + rand(-0.2, 0.2), vy: -dir.y * R * 0.016 + rand(-0.2, 0.2) + 0.15,
-        size: R * rand(0.4, 0.52) * depth, rot: rand(0, 6), vr: rand(-0.04, 0.04), life: 1, front, kind: pick(KINDS),
+        vx: -dir.x * R * 0.008 + rand(-0.15, 0.15), vy: -dir.y * R * 0.008 + rand(-0.15, 0.15) + 0.1, // медленно, чтобы не уходили за край холста
+        size: R * rand(0.4, 0.52) * depth, rot: rand(0, 6), vr: rand(-0.04, 0.04), life: 1, kind: pick(KINDS),
       });
     }
     if (p.trail.length > 12) p.trail.shift();
@@ -479,9 +450,11 @@
     const layer = (isFront) => {
       ctx.save();
       ctx.rotate(ORBIT.tilt);
-      p.trail.filter((t) => t.front === isFront).forEach((t) => {
+      // Орешки всегда рисуются поверх планеты и кольца — иначе они «тонут» в её тени
+      if (isFront) p.trail.forEach((t) => {
         ctx.save();
-        ctx.globalAlpha = Math.max(0, t.life) * (isFront ? 1 : 0.7);
+        // Орешек остаётся непрозрачным и тает только в самом конце
+        ctx.globalAlpha = Math.min(1, Math.max(0, t.life) * 4);
         ctx.translate(t.x, t.y);
         ctx.rotate(t.rot);
         ctx.drawImage(sprites[t.kind], -t.size / 2, -t.size / 2, t.size, t.size);
@@ -491,8 +464,7 @@
         ctx.save();
         ctx.translate(pos.x, pos.y);
         ctx.rotate(Math.atan2(dir.y, dir.x));
-        ctx.globalAlpha = isFront ? 1 : 0.8;
-        drawRocket3D(ctx, L, rot * 5, len / ORBIT.rx);
+        drawRocket(ctx, L);
         ctx.restore();
       }
       ctx.restore();
@@ -598,8 +570,9 @@
   }
 
   /* ---------- Бело-красная ракета пролетает по тёмным блокам, из сопла сыплются орешки ---------- */
+  // На первом экране не летает: там своя ракета вокруг планеты, а фоновая пряталась бы за буквами COSMO
   if (!reduced) {
-    document.querySelectorAll('.hero, .cosmos-zone, .stats-band, #contacts').forEach((zone) => {
+    document.querySelectorAll('.cosmos-zone, .stats-band, #contacts').forEach((zone) => {
       const canvas = document.createElement('canvas');
       canvas.className = 'flyby';
       canvas.setAttribute('aria-hidden', 'true');
@@ -644,7 +617,7 @@
         trail = trail.filter((t) => t.life > 0);
         trail.forEach((t) => {
           ctx.save();
-          ctx.globalAlpha = t.life;
+          ctx.globalAlpha = Math.min(1, t.life * 4);
           ctx.translate(t.x, t.y);
           ctx.rotate(t.rot);
           ctx.drawImage(sprites[t.kind], -t.size / 2, -t.size / 2, t.size, t.size);
@@ -654,7 +627,7 @@
           ctx.save();
           ctx.translate(rocket.x, rocket.y);
           ctx.rotate(Math.atan2(rocket.vy, rocket.vx));
-          drawRocket3D(ctx, rocket.L, frame * 0.06);
+          drawRocket(ctx, rocket.L);
           ctx.restore();
         }
       };
@@ -738,6 +711,18 @@
       el.style.setProperty('--i', i % 6);
       io.observe(el);
     }));
+    // Карточки товаров каталог перерисовывает при каждом фильтре — подхватываем новые.
+    // Им свой класс: выезд через translate, чтобы не мешать наклону и подъёму при наведении (transform)
+    const products = document.getElementById('products');
+    const watchCards = () => products.querySelectorAll('.card:not(.reveal-card)').forEach((el, i) => {
+      el.classList.add('reveal-card');
+      el.style.setProperty('--i', i % 3);
+      io.observe(el);
+    });
+    if (products) {
+      watchCards();
+      new MutationObserver(watchCards).observe(products, { childList: true });
+    }
   }
 
   /* ---------- Товар летит в корзину ---------- */
