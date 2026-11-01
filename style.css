@@ -322,13 +322,13 @@ html.fx .reveal.is-in { opacity: 1; transform: none; }
 /* Товар летит в корзину */
 .fly-to-cart { position: fixed; z-index: 65; object-fit: cover; border-radius: 50%; pointer-events: none; box-shadow: 0 12px 30px rgba(11, 13, 24, .35); }
 
-/* Курсор-орбита: кольцо с бегающим спутником; над кнопками увеличивается */
-.cursor-orbit { position: fixed; left: 0; top: 0; z-index: 70; width: 38px; height: 38px; margin: -19px 0 0 -19px; border: 1.5px solid var(--accent); border-radius: 50%; pointer-events: none; opacity: 0; transition: opacity .3s, scale .25s, background .25s; }
-.cursor-orbit.is-on { opacity: .9; }
-.cursor-orbit.is-hot { scale: 1.7; background: rgba(240, 138, 36, .12); }
-.cursor-orbit i { position: absolute; inset: 0; animation: orbit-spin 1.6s linear infinite; }
-.cursor-orbit i::before { content: ''; position: absolute; top: -3px; left: 50%; width: 6px; height: 6px; margin-left: -3px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 8px var(--accent); }
-@keyframes orbit-spin { to { rotate: 360deg; } }
+/* Курсор-орбита: тонкое кольцо догоняет точку на кончике курсора; над кнопками чуть увеличивается */
+.cursor-orbit, .cursor-dot { position: fixed; left: 0; top: 0; z-index: 70; border-radius: 50%; pointer-events: none; opacity: 0; transition: opacity .2s; }
+.cursor-orbit { width: 30px; height: 30px; margin: -15px 0 0 -15px; border: 1.5px solid var(--accent); transition: opacity .2s, scale .2s; }
+.cursor-dot { width: 6px; height: 6px; margin: -3px 0 0 -3px; background: var(--accent); }
+.cursor-orbit.is-on { opacity: .75; }
+.cursor-dot.is-on { opacity: 1; }
+.cursor-orbit.is-hot { scale: 1.35; opacity: .5; }
 
 /* Магнитные кнопки и карточки с наклоном */
 .is-magnet { transition: translate .15s ease-out, background .2s, color .2s; }
@@ -352,6 +352,41 @@ html.fx .reveal.is-in { opacity: 1; transform: none; }
 .hero__bottom { animation-delay: .75s; }
 @keyframes rise { from { translate: 0 .5em; opacity: 0; } }
 @keyframes fade-up { from { translate: 0 18px; opacity: 0; } }
+
+/* Заголовки по словам: слово выезжает снизу из-под маски (включает effects.js) */
+html.fx .h-display.by-words.reveal { opacity: 1; transform: none; }
+.by-words .w { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: .12em; margin-bottom: -.12em; }
+.by-words .w > span { display: inline-block; transform: translateY(110%); transition: transform .9s cubic-bezier(.2, .8, .2, 1) calc(var(--wi) * 70ms); }
+.by-words.is-in .w > span { transform: none; }
+
+/* Живые планеты (canvas из effects.js) поверх запасного фото; кольцо выходит за пределы буквы */
+.planet__canvas { position: absolute; left: 50%; top: 50%; translate: -50% -50%; pointer-events: none; }
+.planet--live { z-index: 2; }
+.planet--live img, .planet--live .orbit, .planet--live::after { opacity: 0; }
+
+/* Клик по планете */
+.planet { cursor: pointer; }
+.planet.is-spinning img { animation: planet-spin 1s cubic-bezier(.2, .8, .2, 1); }
+@keyframes planet-spin { from { rotate: 0deg; scale: 1.15; } to { rotate: 720deg; scale: 1; } }
+
+/* Свечение туманности за мышкой */
+.hero::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(420px circle at var(--gx, 50%) var(--gy, 50%), rgba(240, 138, 36, .16), rgba(120, 90, 220, .08) 40%, transparent 70%); opacity: 0; transition: opacity .5s; }
+.hero.is-glow::after { opacity: 1; }
+
+/* Слово в подвале загорается под курсором */
+.footer__word.is-lit { background: radial-gradient(circle at var(--fx) var(--fy), var(--accent) 0, rgba(240, 138, 36, .55) 9%, transparent 24%); -webkit-background-clip: text; background-clip: text; -webkit-text-stroke-color: rgba(244, 239, 230, .3); }
+
+/* Параллакс: фото разделов чуть крупнее рамки, чтобы при сдвиге не появлялись края */
+.world img { scale: 1.1; }
+.split__img { will-change: translate; }
+
+/* Полоска прогресса прокрутки */
+.scroll-progress { position: fixed; left: 0; top: 0; right: 0; height: 3px; z-index: 22; background: linear-gradient(90deg, var(--accent), #ffd08a); transform: scaleX(0); transform-origin: 0 50%; pointer-events: none; }
+
+/* Волна от клика по кнопке */
+.btn { position: relative; overflow: hidden; isolation: isolate; }
+.ripple { position: absolute; z-index: -1; border-radius: 50%; background: rgba(255, 255, 255, .35); transform: scale(0); animation: ripple .6s ease-out forwards; pointer-events: none; }
+@keyframes ripple { to { transform: scale(1); opacity: 0; } }
 
 @media (max-width: 520px) {
   .floaters { --k: .5; opacity: .7; }
