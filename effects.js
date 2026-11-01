@@ -319,6 +319,8 @@
     c.fillRect(-0.5 * L, -0.09 * L, 0.08 * L, 0.18 * L);
   }
 
+  const CRATERS = Array.from({ length: 16 }, () => ({ lon: rand(0, Math.PI * 2), lat: rand(-1.1, 1.1), r: rand(0.06, 0.17) }));
+
   const ORBIT = { tilt: -0.32, rx: 1.62, ry: 0.5 };
 
   function drawNutPlanet(p) {
@@ -392,22 +394,10 @@
     ctx.closePath();
   }
 
-  function drawAlmondPlanet(p) {
-    const { ctx, R } = p;
-    const rot = p.rot;
-    const h = R * 1.08;
-    // Медленно поворачивается вокруг своей оси: ширина «дышит», бороздки уходят за край
-    const w = R * (0.7 + 0.08 * Math.cos(rot * 2));
-    // Мягкая тень на «полу»
-    const sh = ctx.createRadialGradient(0, h * 1.02, 0, 0, h * 1.02, w * 1.1);
-    sh.addColorStop(0, 'rgba(60, 30, 10, .22)');
-    sh.addColorStop(1, 'rgba(60, 30, 10, 0)');
-    ctx.fillStyle = sh;
-    ctx.beginPath(); ctx.ellipse(0, h * 1.02, w * 1.1, R * 0.16, 0, 0, Math.PI * 2); ctx.fill();
-
-    ctx.save();
-    ctx.rotate(Math.sin(rot * 1.3) * 0.12); // лёгкое покачивание
-    // Кожица — один плавный градиент от блика к тени, без резких переходов
+  // Миндалина в центре координат: w, h — полуширина и полувысота, spin — поворот вокруг своей оси
+  function drawAlmond(ctx, w0, h, spin) {
+    const w = w0 * (0.86 + 0.14 * Math.cos(spin));
+    // Кожица — один плавный градиент от блика к тени
     const surf = ctx.createRadialGradient(-w * 0.35, -h * 0.3, 0, -w * 0.35, -h * 0.3, h * 1.75);
     [[0, '#f0bb82'], [0.14, '#e2a066'], [0.3, '#cf8a4d'], [0.46, '#bb763c'], [0.6, '#a6642f'],
       [0.74, '#8f5326'], [0.87, '#78441e'], [1, '#5f3517']]
@@ -415,31 +405,92 @@
     almondPath(ctx, w, h);
     ctx.fillStyle = surf;
     ctx.fill();
-    // Продольные бороздки сдвигаются при повороте и бледнеют у края
     ctx.save();
     almondPath(ctx, w, h);
     ctx.clip();
+    // Продольные бороздки сдвигаются при повороте и бледнеют у края
     ctx.lineCap = 'round';
     for (let k = 0; k < 9; k++) {
-      const lon = rot * 2 + (k / 9) * Math.PI * 2;
+      const lon = spin + (k / 9) * Math.PI * 2;
       const depth = Math.cos(lon);
       if (depth <= 0.05) continue;
       const x = Math.sin(lon) * w * 0.82;
-      ctx.strokeStyle = `rgba(80, 38, 12, ${0.3 * Math.min(1, depth * 2.5)})`;
-      ctx.lineWidth = R * 0.035;
+      ctx.strokeStyle = `rgba(80, 38, 12, ${0.32 * Math.min(1, depth * 2.5)})`;
+      ctx.lineWidth = Math.max(1, h * 0.035);
       ctx.beginPath();
       ctx.moveTo(x * 0.15, -h * 0.9);
       ctx.quadraticCurveTo(x * 1.12, -h * 0.05, x * 0.72, h * 0.78);
       ctx.stroke();
     }
     // Блик
-    const gl = ctx.createRadialGradient(-w * 0.38, -h * 0.4, 0, -w * 0.38, -h * 0.4, w * 0.7);
-    gl.addColorStop(0, 'rgba(255, 236, 205, .45)');
+    const gl = ctx.createRadialGradient(-w * 0.38, -h * 0.4, 0, -w * 0.38, -h * 0.4, w * 0.75);
+    gl.addColorStop(0, 'rgba(255, 236, 205, .5)');
     gl.addColorStop(1, 'rgba(255, 236, 205, 0)');
     ctx.fillStyle = gl;
     ctx.fillRect(-w, -h, w * 2, h * 2);
     ctx.restore();
+  }
+
+  function drawApricotPlanet(p) {
+    const { ctx, R } = p;
+    const rot = p.rot;
+    // Миндалина-спутник на наклонной орбите: за планетой меньше и бледнее, перед ней — крупнее
+    const ma = rot * 2.2;
+    const ORB = { rx: R * 1.62, ry: R * 0.44, tilt: 0.28 };
+    const moonFront = Math.sin(ma) > 0;
+    const drawMoon = () => {
+      const depth = 0.75 + 0.25 * Math.sin(ma);
+      const x = Math.cos(ma) * ORB.rx, y = Math.sin(ma) * ORB.ry;
+      ctx.save();
+      ctx.rotate(ORB.tilt);
+      ctx.translate(x, y);
+      // Носиком вперёд по ходу движения
+      ctx.rotate(Math.atan2(Math.cos(ma) * ORB.ry, -Math.sin(ma) * ORB.rx) + Math.PI / 2);
+      ctx.globalAlpha = moonFront ? 1 : 0.75;
+      ctx.shadowColor = 'rgba(0, 0, 0, .35)';
+      ctx.shadowBlur = R * 0.12;
+      ctx.shadowOffsetY = R * 0.04;
+      drawAlmond(ctx, R * 0.2 * depth, R * 0.32 * depth, rot * 3);
+      ctx.restore();
+    };
+    ctx.save();
+    ctx.rotate(ORB.tilt);
+    ctx.strokeStyle = 'rgba(244, 239, 230, .16)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.ellipse(0, 0, ORB.rx, ORB.ry, 0, 0, Math.PI * 2); ctx.stroke();
     ctx.restore();
+    if (!moonFront) drawMoon();
+    // Атмосфера
+    const atm = ctx.createRadialGradient(0, 0, R * 0.9, 0, 0, R * 1.35);
+    atm.addColorStop(0, 'rgba(255, 150, 50, .45)');
+    atm.addColorStop(1, 'rgba(255, 150, 50, 0)');
+    ctx.fillStyle = atm;
+    ctx.beginPath(); ctx.arc(0, 0, R * 1.35, 0, Math.PI * 2); ctx.fill();
+    // Поверхность — один градиент от точки света до теневого края: цвет меняется плавно
+    const surf = ctx.createRadialGradient(-R * 0.38, -R * 0.42, 0, -R * 0.38, -R * 0.42, R * 1.78);
+    [[0, '#ffd88c'], [0.12, '#ffc468'], [0.25, '#fbab45'], [0.38, '#f6992f'], [0.5, '#ee8a25'],
+      [0.62, '#e27b1d'], [0.73, '#d06c17'], [0.83, '#b95c12'], [0.92, '#9e4c0e'], [1, '#843f0b']]
+      .forEach(([o, c]) => surf.addColorStop(o, c));
+    ctx.fillStyle = surf;
+    ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.fill();
+    // Кратеры смещаются при вращении и сжимаются у края — получается объём
+    ctx.save();
+    ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.clip();
+    CRATERS.forEach((c) => {
+      const lon = c.lon + rot;
+      const depth = Math.cos(lon);
+      if (depth <= 0.05) return;
+      const x = Math.sin(lon) * Math.cos(c.lat) * R;
+      const y = Math.sin(c.lat) * R * 0.85;
+      const r = c.r * R;
+      const fade = Math.min(1, depth * 2.5); // у края кратер плавно исчезает, а не обрывается
+      ctx.fillStyle = `rgba(150, 60, 0, ${0.45 * fade})`;
+      ctx.beginPath(); ctx.ellipse(x, y, r * depth, r, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = `rgba(255, 210, 140, ${0.35 * fade})`;
+      ctx.beginPath(); ctx.ellipse(x - r * 0.18 * depth, y - r * 0.18, r * 0.7 * depth, r * 0.7, 0, 0, Math.PI * 2); ctx.fill();
+    });
+    ctx.restore();
+    if (moonFront) drawMoon();
   }
 
   function initPlanets() {
@@ -448,7 +499,7 @@
       canvas.className = 'planet__canvas';
       canvas.setAttribute('aria-hidden', 'true');
       span.append(canvas);
-      const p = { span, canvas, ctx: canvas.getContext('2d'), kind: i === 0 ? 'nut' : 'almond', rot: rand(0, 6), boost: 0, boostRate: 1 };
+      const p = { span, canvas, ctx: canvas.getContext('2d'), kind: i === 0 ? 'nut' : 'apricot', rot: rand(0, 6), boost: 0, boostRate: 1 };
       p.trail = []; // орешки из сопла ракеты
       planets.push(p);
       span.classList.add('planet--live');
@@ -478,7 +529,7 @@
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.translate(canvas.width / dpr / 2, canvas.height / dpr / 2);
       if (p.kind === 'nut') drawNutPlanet(p);
-      else drawAlmondPlanet(p);
+      else drawApricotPlanet(p);
     });
   }
 
@@ -503,7 +554,7 @@
     // x, y — положение в процентах, s — размер, d — глубина (чем больше, тем ближе и сильнее параллакс)
     const spots = [
       { k: 'pistachio', x: 8, y: 14, s: 96, d: 1.2, r: -24 },
-      { k: 'cashew', x: 90, y: 13, s: 84, d: 0.8, r: 32 },
+      { k: 'almond', x: 90, y: 13, s: 84, d: 0.8, r: 32 },
       { k: 'apricot', x: 5, y: 66, s: 120, d: 1.6, r: 10 },
       { k: 'hazelnut', x: 94, y: 60, s: 96, d: 1.1, r: -8 },
       { k: 'pistachio', x: 70, y: 5, s: 52, d: 0.4, r: 70 },
