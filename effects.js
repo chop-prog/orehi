@@ -1,8 +1,11 @@
 // Декоративные эффекты Cosmo: орехи падают из курсора, парят на первом экране, блоки плавно появляются.
-// Орехи рисуются кодом на canvas — без картинок. При prefers-reduced-motion всё движение отключается.
+// Орехи рисуются кодом на canvas — без картинок.
+// При prefers-reduced-motion (в Windows — выключенные «Эффекты анимации») орехи из курсора остаются,
+// но их меньше; покачивание, параллакс и анимации при прокрутке выключаются.
 (() => {
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const finePointer = matchMedia('(pointer: fine)').matches;
+  // any-pointer: на ноутбуке с сенсорным экраном основным считается касание, но мышь тоже есть
+  const hasMouse = matchMedia('(any-pointer: fine)').matches;
   const SPRITE = 96; // размер спрайта в CSS-пикселях
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
@@ -138,14 +141,15 @@
   const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
   /* ---------- Падающие орехи ---------- */
-  if (!reduced) {
+  {
     const canvas = document.createElement('canvas');
     canvas.className = 'nut-rain';
     canvas.setAttribute('aria-hidden', 'true');
     document.body.append(canvas);
     const ctx = canvas.getContext('2d');
     const nuts = [];
-    const MAX = 70;
+    const MAX = reduced ? 25 : 70;
+    const TRAIL_GAP = reduced ? 140 : 55; // мс между орехами из курсора
     let running = false;
     let lastSpawn = 0;
     let last = { x: 0, y: 0 };
@@ -198,12 +202,12 @@
     // Орехи не мешают работать с корзиной и окнами
     const busy = () => document.body.style.overflow === 'hidden';
 
-    if (finePointer) {
+    if (hasMouse) {
       addEventListener('pointermove', (e) => {
-        if (busy()) return;
+        if (busy() || e.pointerType === 'touch') return;
         const now = performance.now();
         const dist = Math.hypot(e.clientX - last.x, e.clientY - last.y);
-        if (now - lastSpawn > 55 && dist > 14) {
+        if (now - lastSpawn > TRAIL_GAP && dist > 14) {
           spawn(e.clientX, e.clientY, false);
           lastSpawn = now;
           last = { x: e.clientX, y: e.clientY };
@@ -212,7 +216,7 @@
     }
     addEventListener('pointerdown', (e) => {
       if (busy() || e.target.closest?.('input, select, textarea')) return;
-      const count = finePointer ? 10 : 7;
+      const count = reduced ? 4 : e.pointerType === 'touch' ? 7 : 10;
       for (let i = 0; i < count; i++) spawn(e.clientX, e.clientY, true);
     }, { passive: true });
   }
