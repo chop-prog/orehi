@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ореховый Двор — орехи и сухофрукты с доставкой по России</title>
+  <meta name="description" content="Орехи, сухофрукты и подарочные наборы с доставкой в пункты СДЭК по всей России. Фасовка от 100 г, свежий урожай, самовывоз в Москве.">
+  <meta name="theme-color" content="#2f4a3a">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="ru_RU">
+  <meta property="og:title" content="Ореховый Двор — орехи и сухофрукты">
+  <meta property="og:description" content="Фасовка от 100 г, свежий урожай, доставка СДЭК по всей России.">
+  <meta property="og:image" content="https://images.unsplash.com/photo-1710857397974-f0617001c39e?w=1200&h=630&fit=crop&q=80">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%232f4a3a'/><path d='M16 7c-5 0-8 4-8 9s3 9 8 9 8-4 8-9-3-9-8-9z' fill='%23d9a45b'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Lora:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a class="skip-link" href="#catalog">Перейти к каталогу</a>
+  <div class="topbar">
+    <div class="container topbar__inner">
+      <span>Доставка СДЭК по всей России · бесплатно от 3 000 ₽</span>
+      <span class="topbar__right"><span data-shop="hours"></span> · <a data-shop="phone" data-shop-href="phoneHref"></a></span>
+    </div>
+  </div>
+
+  <header class="header">
+    <div class="container header__inner">
+      <a href="#" class="logo">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="16" fill="#2f4a3a"/><path d="M16 7c-5 0-8 4-8 9s3 9 8 9 8-4 8-9-3-9-8-9z" fill="#d9a45b"/><path d="M16 9v14" stroke="#2f4a3a" stroke-width="1.6"/></svg>
+        <span data-shop="name">Ореховый Двор</span>
+      </a>
+      <nav class="nav">
+        <a href="#catalog">Каталог</a>
+        <a href="#gifts">Подарки и опт</a>
+        <a href="#delivery">Доставка и оплата</a>
+        <a href="#faq">Вопросы</a>
+        <a href="#contacts">Контакты</a>
+      </nav>
+      <button class="cart-btn" id="cartOpen" aria-label="Открыть корзину">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="20" r="1.4" fill="currentColor"/><circle cx="17" cy="20" r="1.4" fill="currentColor"/></svg>
+        <span class="cart-btn__sum" id="cartSum">Корзина</span>
+        <span class="cart-btn__count" id="cartCount" hidden>0</span>
+      </button>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="container hero__inner">
+      <div class="hero__text">
+        <p class="eyebrow">Урожай 2026 года</p>
+        <h1>Орехи и сухофрукты, которые хочется заказать снова</h1>
+        <p class="hero__lead">Работаем напрямую с поставщиками из Узбекистана, Ирана и Турции. Фасуем от 100 г в день отправки, чтобы орехи оставались свежими, а сухофрукты — мягкими.</p>
+        <div class="hero__actions">
+          <a href="#catalog" class="btn btn--primary">Перейти в каталог</a>
+          <a class="btn btn--ghost btn--tg" data-shop-href="bot" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 4.3 2.9 11.5c-1.3.5-1.3 1.2-.2 1.6l4.8 1.5 1.8 5.6c.2.6.4.8.8.8.4 0 .6-.2.8-.4l2.4-2.3 4.9 3.6c.9.5 1.5.2 1.8-.8l3.2-15.1c.3-1.3-.5-1.9-1.7-1.3zM9.3 14.4l9.3-5.9c.4-.3.8-.1.5.2l-7.9 7.2-.3 3.3z" fill="currentColor"/></svg>
+            Заказать в Telegram
+          </a>
+        </div>
+        <ul class="hero__facts">
+          <li><b>от 100 г</b><span>любая позиция</span></li>
+          <li><b>2–5 дней</b><span>доставка по России</span></li>
+          <li><b>14 дней</b><span>на возврат и замену</span></li>
+        </ul>
+      </div>
+      <div class="hero__media">
+        <img src="img/1710857397974-f0617001c39e.jpg" alt="Прилавок с орехами и сухофруктами" width="550" height="550" fetchpriority="high">
+      </div>
+    </div>
+  </section>
+
+  <main>
+    <section class="section" id="catalog">
+      <div class="container">
+        <div class="section__head">
+          <div>
+            <p class="eyebrow">Каталог</p>
+            <h2>Выберите вкус и фасовку</h2>
+          </div>
+          <div class="tools">
+            <input type="search" id="search" class="input" placeholder="Поиск по каталогу" aria-label="Поиск по каталогу">
+            <select id="sort" class="input" aria-label="Сортировка">
+              <option value="popular">Популярные</option>
+              <option value="cheap">Сначала дешевле</option>
+              <option value="expensive">Сначала дороже</option>
+              <option value="name">По названию</option>
+            </select>
+          </div>
+        </div>
+        <div class="chips" id="categories"></div>
+        <div class="grid" id="products">
+          <p class="empty">Загружаем каталог…</p>
+        </div>
+        <p class="empty" id="empty" hidden>По запросу ничего не нашлось. Попробуйте другое название.</p>
+      </div>
+    </section>
+
+    <section class="section section--alt">
+      <div class="container features">
+        <div class="feature">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21c-4-3-7-6.5-7-11a7 7 0 0 1 14 0c0 4.5-3 8-7 11z"/><path d="M12 7v7M9 11h6"/></svg>
+          <h3>Свежий урожай</h3>
+          <p>Закупаем небольшими партиями, поэтому товар не залёживается на складе.</p>
+        </div>
+        <div class="feature">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16l-1.5 12a2 2 0 0 1-2 1.8h-9A2 2 0 0 1 5.5 19z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>
+          <h3>Фасовка в день отправки</h3>
+          <p>Пакеты с zip-замком и маркировкой: состав, вес, дата фасовки и срок годности.</p>
+        </div>
+        <div class="feature">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8.5-7 10-4-1.5-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
+          <h3>Документы на товар</h3>
+          <p>На каждую партию есть декларация соответствия ТР ТС. Покажем по запросу.</p>
+        </div>
+        <div class="feature">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v4h4"/></svg>
+          <h3>Замена или возврат</h3>
+          <p>Если товар не понравился, заменим его или вернём деньги в течение 14 дней.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="gifts">
+      <div class="container split">
+        <img class="split__img" src="img/1769255484233-94ece98f722d.jpg" alt="Наборы орехов в пиалах" loading="lazy" width="500" height="400">
+        <div>
+          <p class="eyebrow">Подарки и опт</p>
+          <h2>Корпоративные подарки и оптовые закупки</h2>
+          <p>Соберём наборы под ваш бюджет и с вашим логотипом на коробке, от 10 штук. Для кофеен, пекарен и магазинов есть оптовые цены от 10 кг каждой позиции.</p>
+          <ul class="checks">
+            <li>Счёт и закрывающие документы для юрлиц</li>
+            <li>Доставка по нужным адресам к указанной дате</li>
+            <li>Образцы перед крупным заказом</li>
+          </ul>
+          <a class="btn btn--primary" data-shop-href="telegram" target="_blank" rel="noopener">Написать менеджеру</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--alt" id="delivery">
+      <div class="container">
+        <p class="eyebrow">Доставка и оплата</p>
+        <h2>Как получить заказ</h2>
+        <div class="delivery" id="deliveryCards"></div>
+        <div class="pay">
+          <h3>Оплата</h3>
+          <p>После оформления менеджер звонит или пишет, чтобы подтвердить заказ, и присылает ссылку на оплату картой или по СБП. Отправляем в течение рабочего дня после оплаты, трек-номер СДЭК приходит в SMS. При самовывозе можно оплатить на месте картой или наличными.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="faq">
+      <div class="container container--narrow">
+        <p class="eyebrow">Вопросы</p>
+        <h2>Частые вопросы</h2>
+        <details class="faq"><summary>Как хранить орехи и сухофрукты?</summary><p>Храните в закрытом пакете или стеклянной банке в сухом прохладном месте, при температуре не выше +20 °C. Очищенные орехи летом лучше держать в холодильнике: так они дольше не горчат.</p></details>
+        <details class="faq"><summary>Можно ли изменить заказ после оформления?</summary><p>Да. Скажите об этом менеджеру, когда он позвонит для подтверждения, или напишите нам в Telegram до отправки заказа.</p></details>
+        <details class="faq"><summary>Почему вес в заказе может немного отличаться?</summary><p>Мы фасуем вручную, поэтому возможна погрешность ±3%. Если вес окажется меньше, разницу пересчитаем в вашу пользу.</p></details>
+        <details class="faq"><summary>Есть ли минимальная сумма заказа?</summary><p>Минимальный заказ — 500 ₽. Доставка в пункт выдачи СДЭК бесплатна от 3 000 ₽.</p></details>
+        <details class="faq"><summary>Как отследить посылку?</summary><p>После отправки СДЭК присылает SMS с трек-номером. По нему можно следить за посылкой на сайте или в приложении СДЭК. Когда заказ придёт в пункт выдачи, вы получите ещё одно уведомление.</p></details>
+        <details class="faq"><summary>Не испортятся ли продукты в дороге?</summary><p>Орехи и сухофрукты спокойно переносят доставку до двух недель. Мы упаковываем их в плотные пакеты с zip-замком и картонную коробку, чтобы ничего не помялось.</p></details>
+        <details class="faq"><summary>Что делать, если товар не понравился?</summary><p>Напишите нам в течение 14 дней и приложите фото. Мы заменим товар или вернём деньги.</p></details>
+      </div>
+    </section>
+
+    <section class="section section--dark" id="contacts">
+      <div class="container contacts">
+        <div>
+          <p class="eyebrow">Контакты</p>
+          <h2>Остались вопросы? Ответим</h2>
+          <p class="muted">Звоните, пишите в Telegram или приезжайте за заказом в наш пункт самовывоза.</p>
+        </div>
+        <ul class="contacts__list">
+          <li><span>Телефон</span><a data-shop="phone" data-shop-href="phoneHref"></a></li>
+          <li><span>Заказ в Telegram</span><a data-shop-href="bot" target="_blank" rel="noopener">Открыть бота магазина</a></li>
+          <li><span>Менеджер</span><a data-shop-href="telegram" target="_blank" rel="noopener">Написать в Telegram</a></li>
+          <li><span>Почта</span><a data-shop="email" data-shop-href="email"></a></li>
+          <li><span>Самовывоз</span><b data-shop="address"></b></li>
+          <li><span>Режим работы</span><b data-shop="hours"></b></li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer__inner">
+      <p>© <span id="year"></span> <span data-shop="name"></span>. <span data-shop="legal"></span></p>
+      <p><a href="offer.html">Публичная оферта</a> · <a href="privacy.html">Политика конфиденциальности</a></p>
+      <p class="footer__credit">Фото: Unsplash</p>
+    </div>
+  </footer>
+
+  <!-- Корзина -->
+  <div class="overlay" id="overlay" hidden></div>
+  <aside class="drawer" id="drawer" aria-label="Корзина" aria-hidden="true">
+    <div class="drawer__head">
+      <h2>Корзина</h2>
+      <button class="icon-btn" id="cartClose" aria-label="Закрыть корзину">✕</button>
+    </div>
+    <div class="free-ship" id="freeShip"></div>
+    <ul class="cart-list" id="cartList"></ul>
+    <div class="drawer__foot">
+      <div class="total"><span>Товары</span><b id="cartTotal">0 ₽</b></div>
+      <p class="hint" id="minOrderHint" hidden></p>
+      <button class="btn btn--primary btn--block" id="checkoutBtn">Оформить заказ</button>
+    </div>
+  </aside>
+
+  <!-- Карточка товара -->
+  <div class="modal" id="productModal" hidden>
+    <div class="modal__box modal__box--wide" role="dialog" aria-modal="true" aria-labelledby="pmTitle">
+      <button type="button" class="icon-btn modal__close" data-close aria-label="Закрыть">✕</button>
+      <div id="productBody"></div>
+    </div>
+  </div>
+
+  <!-- Оформление -->
+  <div class="modal" id="checkoutModal" hidden>
+    <form class="modal__box" id="orderForm" novalidate role="dialog" aria-modal="true" aria-labelledby="coTitle">
+      <button type="button" class="icon-btn modal__close" data-close aria-label="Закрыть">✕</button>
+      <h2 id="coTitle">Оформление заказа</h2>
+      <label class="field">Имя<input class="input" name="name" autocomplete="name" maxlength="80" placeholder="Как к вам обращаться"></label>
+      <label class="field">Телефон<input class="input" name="phone" type="tel" autocomplete="tel" placeholder="+7 (___) ___-__-__"></label>
+      <fieldset class="field">
+        <legend>Способ получения</legend>
+        <div id="deliveryOptions"></div>
+      </fieldset>
+      <div class="field" id="addressField">
+        <label for="address" id="addressLabel">Адрес</label>
+        <input class="input" id="address" name="address" autocomplete="street-address" maxlength="300">
+        <a class="field__link" id="addressMap" target="_blank" rel="noopener">Найти пункт на карте СДЭК ↗</a>
+      </div>
+      <label class="field">Комментарий<textarea class="input" name="comment" rows="2" maxlength="500" placeholder="Удобное время, текст открытки и т. п."></textarea></label>
+      <div class="summary" id="summary"></div>
+      <label class="consent"><input type="checkbox" name="consent"> <span>Я согласен(на) с <a href="offer.html" target="_blank">офертой</a> и на обработку персональных данных согласно <a href="privacy.html" target="_blank">политике конфиденциальности</a></span></label>
+      <p class="form-error" id="formError" hidden></p>
+      <button class="btn btn--primary btn--block" type="submit" id="submitBtn">Подтвердить заказ</button>
+      <p class="hint">Оплата после звонка менеджера</p>
+    </form>
+  </div>
+
+  <button class="mobile-cart" id="mobileCart" hidden>
+    <span id="mobileCartInfo"></span>
+    <b>Корзина →</b>
+  </button>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="shop.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
