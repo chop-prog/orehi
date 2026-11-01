@@ -141,6 +141,7 @@
   const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
   /* ---------- Падающие орехи ---------- */
+  let spawnNut = () => {}; // нужен и другим эффектам (горсть из корзины)
   {
     const canvas = document.createElement('canvas');
     canvas.className = 'nut-rain';
@@ -219,6 +220,7 @@
       const count = reduced ? 4 : e.pointerType === 'touch' ? 7 : 10;
       for (let i = 0; i < count; i++) spawn(e.clientX, e.clientY, true);
     }, { passive: true });
+    spawnNut = spawn;
   }
 
   /* ---------- Парящие орехи на первом экране ---------- */
@@ -290,5 +292,150 @@
       el.style.setProperty('--i', i % 6);
       io.observe(el);
     }));
+  }
+
+  /* ---------- Товар летит в корзину ---------- */
+  // Слушаем на фазе перехвата, пока app.js не перерисовал карточку
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest?.('[data-add]');
+    if (!btn) return;
+    const src = btn.closest('.card')?.querySelector('.card__img img') || btn.closest('.pm')?.querySelector('.pm__img');
+    const mobile = document.getElementById('mobileCart');
+    const target = mobile && !mobile.hidden && mobile.offsetParent ? mobile : document.getElementById('cartOpen');
+    if (!src || !target) return;
+    const from = src.getBoundingClientRect();
+    const to = target.getBoundingClientRect();
+    const size = Math.min(from.width, from.height, 140);
+    const x0 = from.left + from.width / 2 - size / 2;
+    const y0 = from.top + from.height / 2 - size / 2;
+    const dx = to.left + to.width / 2 - size / 2 - x0;
+    const dy = to.top + to.height / 2 - size / 2 - y0;
+    const ghost = src.cloneNode();
+    ghost.removeAttribute('loading');
+    ghost.className = 'fly-to-cart';
+    ghost.style.cssText = `left:${x0}px;top:${y0}px;width:${size}px;height:${size}px;`;
+    document.body.append(ghost);
+    const finish = () => {
+      ghost.remove();
+      for (let i = 0; i < (reduced ? 3 : 6); i++) spawnNut(to.left + to.width / 2, to.top + to.height / 2, true);
+    };
+    if (reduced || !ghost.animate) return finish();
+    ghost.animate([
+      { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+      { transform: `translate(${dx * 0.5}px, ${dy * 0.5 - 140}px) scale(.55) rotate(180deg)`, opacity: 1, offset: 0.55 },
+      { transform: `translate(${dx}px, ${dy}px) scale(.12) rotate(360deg)`, opacity: 0.6 },
+    ], { duration: 750, easing: 'cubic-bezier(.4, 0, .2, 1)' }).onfinish = finish;
+  }, true);
+
+  if (reduced) return; // остальные эффекты — только движение, без них сайт работает так же
+
+  /* ---------- Курсор-орбита ---------- */
+  if (hasMouse) {
+    const ring = document.createElement('div');
+    ring.className = 'cursor-orbit';
+    ring.setAttribute('aria-hidden', 'true');
+    ring.innerHTML = '<i></i>';
+    document.body.append(ring);
+    let mx = -100, my = -100, rx = -100, ry = -100, shown = false;
+    addEventListener('pointermove', (e) => {
+      if (e.pointerType === 'touch') return;
+      mx = e.clientX; my = e.clientY;
+      if (!shown) { shown = true; rx = mx; ry = my; ring.classList.add('is-on'); }
+      const hot = e.target.closest?.('a, button, .card__img, .world, summary, label, select');
+      ring.classList.toggle('is-hot', !!hot);
+    }, { passive: true });
+    document.documentElement.addEventListener('pointerleave', () => { shown = false; ring.classList.remove('is-on'); });
+    (function follow() {
+      rx += (mx - rx) * 0.18;
+      ry += (my - ry) * 0.18;
+      ring.style.transform = `translate(${rx}px, ${ry}px)`;
+      requestAnimationFrame(follow);
+    })();
+
+    /* «Магнитные» кнопки */
+    const magnets = '.btn--accent, .btn--line, .btn--dark, .cart-btn, .header__tg';
+    document.addEventListener('pointermove', (e) => {
+      const el = e.target.closest?.(magnets);
+      document.querySelectorAll('.is-magnet').forEach((m) => {
+        if (m !== el) { m.classList.remove('is-magnet'); m.style.translate = ''; }
+      });
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      el.classList.add('is-magnet');
+      el.style.translate = `${(e.clientX - r.left - r.width / 2) * 0.22}px ${(e.clientY - r.top - r.height / 2) * 0.35}px`;
+    }, { passive: true });
+
+    /* Объёмные карточки с бликом */
+    const grid = document.getElementById('products');
+    grid?.addEventListener('pointermove', (e) => {
+      const card = e.target.closest('.card');
+      if (!card) return;
+      const r = card.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width;
+      const py = (e.clientY - r.top) / r.height;
+      card.style.transform = `perspective(900px) rotateX(${(0.5 - py) * 8}deg) rotateY(${(px - 0.5) * 10}deg) translateY(-6px)`;
+      card.style.setProperty('--mx', `${px * 100}%`);
+      card.style.setProperty('--my', `${py * 100}%`);
+    });
+    grid?.addEventListener('pointerout', (e) => {
+      const card = e.target.closest('.card');
+      if (card && !card.contains(e.relatedTarget)) card.style.transform = '';
+    });
+  }
+
+  /* ---------- Падающие звёзды на тёмных блоках ---------- */
+  document.querySelectorAll('.hero, .section--space').forEach((sky) => {
+    const shoot = () => {
+      if (!document.hidden && sky.getBoundingClientRect().bottom > 0 && sky.getBoundingClientRect().top < innerHeight) {
+        const star = document.createElement('span');
+        star.className = 'shooting-star';
+        star.style.left = `${rand(10, 90)}%`;
+        star.style.top = `${rand(0, 45)}%`;
+        sky.append(star);
+        star.addEventListener('animationend', () => star.remove());
+      }
+      setTimeout(shoot, rand(2200, 5200));
+    };
+    setTimeout(shoot, rand(800, 2500));
+  });
+
+  /* ---------- Счётчики в блоке с цифрами ---------- */
+  const fmt = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  const counters = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      counters.unobserve(entry.target);
+      const el = entry.target;
+      const text = el.textContent;
+      const t0 = performance.now();
+      const step = (now) => {
+        const p = Math.min(1, (now - t0) / 1400);
+        const eased = 1 - Math.pow(1 - p, 3);
+        el.textContent = text.replace(/\d+(?:[  ]\d{3})*/g, (m) => fmt(Math.round(Number(m.replace(/\D/g, '')) * eased)));
+        if (p < 1) requestAnimationFrame(step);
+        else el.textContent = text;
+      };
+      requestAnimationFrame(step);
+    });
+  }, { threshold: 0.6 });
+  document.querySelectorAll('.stats b').forEach((b) => counters.observe(b));
+
+  /* ---------- Бегущая строка ускоряется при прокрутке ---------- */
+  const track = document.querySelector('.ticker__track');
+  const tickerAnim = track?.getAnimations?.()[0];
+  if (tickerAnim) {
+    let lastY = scrollY, rate = 1, raf = 0;
+    const settle = () => {
+      rate += (1 - rate) * 0.06;
+      tickerAnim.playbackRate = rate;
+      raf = Math.abs(rate - 1) > 0.02 ? requestAnimationFrame(settle) : 0;
+    };
+    addEventListener('scroll', () => {
+      const dy = scrollY - lastY;
+      lastY = scrollY;
+      rate = Math.max(-5, Math.min(6, 1 + dy * 0.25));
+      tickerAnim.playbackRate = rate;
+      if (!raf) raf = requestAnimationFrame(settle);
+    }, { passive: true });
   }
 })();

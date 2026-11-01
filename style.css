@@ -319,6 +319,40 @@ html.fx .reveal { opacity: 0; transform: translateY(28px); transition: opacity .
 html.fx .reveal.is-in { opacity: 1; transform: none; }
 .card { transition: transform .35s cubic-bezier(.2, .7, .2, 1), box-shadow .35s; }
 .card:hover { transform: translateY(-6px); box-shadow: 0 2px 4px rgba(21, 23, 31, .05), 0 22px 44px rgba(21, 23, 31, .14); }
+/* Товар летит в корзину */
+.fly-to-cart { position: fixed; z-index: 65; object-fit: cover; border-radius: 50%; pointer-events: none; box-shadow: 0 12px 30px rgba(11, 13, 24, .35); }
+
+/* Курсор-орбита: кольцо с бегающим спутником; над кнопками увеличивается */
+.cursor-orbit { position: fixed; left: 0; top: 0; z-index: 70; width: 38px; height: 38px; margin: -19px 0 0 -19px; border: 1.5px solid var(--accent); border-radius: 50%; pointer-events: none; opacity: 0; transition: opacity .3s, scale .25s, background .25s; }
+.cursor-orbit.is-on { opacity: .9; }
+.cursor-orbit.is-hot { scale: 1.7; background: rgba(240, 138, 36, .12); }
+.cursor-orbit i { position: absolute; inset: 0; animation: orbit-spin 1.6s linear infinite; }
+.cursor-orbit i::before { content: ''; position: absolute; top: -3px; left: 50%; width: 6px; height: 6px; margin-left: -3px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+@keyframes orbit-spin { to { rotate: 360deg; } }
+
+/* Магнитные кнопки и карточки с наклоном */
+.is-magnet { transition: translate .15s ease-out, background .2s, color .2s; }
+.btn, .cart-btn, .header__tg { transition: translate .4s cubic-bezier(.2, .7, .2, 1), background .2s, color .2s, border-color .2s, transform .2s; }
+.card { position: relative; }
+.card:hover { transition: transform .12s ease-out, box-shadow .35s; }
+.card::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: radial-gradient(circle at var(--mx, 50%) var(--my, 30%), rgba(255, 255, 255, .45), transparent 42%); opacity: 0; transition: opacity .3s; mix-blend-mode: soft-light; }
+.card:hover::after { opacity: 1; }
+
+/* Падающие звёзды */
+.shooting-star { position: absolute; z-index: 0; width: 140px; height: 2px; border-radius: 2px; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .95)); transform: rotate(148deg); transform-origin: 0 50%; pointer-events: none; animation: shoot 1.2s cubic-bezier(.3, 0, .6, 1) forwards; }
+@keyframes shoot { from { translate: 0 0; opacity: 0; } 15% { opacity: 1; } to { translate: -340px 215px; opacity: 0; } }
+
+/* Появление первого экрана: буквы COSMO выезжают по очереди */
+.hero__word > span:not(.planet) { display: inline-block; animation: rise .9s cubic-bezier(.2, .8, .2, 1) both; }
+.hero__word > span:nth-child(3) { animation-delay: .24s; }
+.planet--a { animation: rise .9s cubic-bezier(.2, .8, .2, 1) .12s both, drift 8s ease-in-out 1s infinite; }
+.planet--b { animation: rise .9s cubic-bezier(.2, .8, .2, 1) .36s both, drift 8s ease-in-out -3s infinite; }
+.hero__kicker, .hero__outline, .hero__bottom { animation: fade-up .9s ease .5s both; }
+.hero__outline { animation-delay: .6s; }
+.hero__bottom { animation-delay: .75s; }
+@keyframes rise { from { translate: 0 .5em; opacity: 0; } }
+@keyframes fade-up { from { translate: 0 18px; opacity: 0; } }
+
 @media (max-width: 520px) {
   .floaters { --k: .5; opacity: .7; }
   .floater:nth-child(n+5) { display: none; }
